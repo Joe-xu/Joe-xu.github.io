@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Thinking_Out_Loud</title>
+  
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="https://joe-xu.github.io/"/>
+  <updated>2018-09-04T14:21:51.118Z</updated>
+  <id>https://joe-xu.github.io/</id>
+  
+  <author>
+    <name>Joe Xu</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>《Go程序设计语言》读书笔记</title>
+    <link href="https://joe-xu.github.io/2018/09/04/reading-the-go-programming-language/"/>
+    <id>https://joe-xu.github.io/2018/09/04/reading-the-go-programming-language/</id>
+    <published>2018-09-04T12:41:44.000Z</published>
+    <updated>2018-09-04T14:21:51.118Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>当初入坑Go的时候，怀着朝圣的心买了这本书来啃。本以为我这样的拖延症会拖到最后而不了了之，没想到硬是被我啃完了，因为书中的内容确实引人入胜，除了深入浅出讲解Go外，还有许多扩展开来的相关知识和编程思想。</p><p>在啃书途中，也用Onenote整理的不少的笔记，主要是一些关键知识的摘抄，打算在懒癌没发作的时间整理成一系列blog，希望能在年末前更新完十三章，届时可能能作为我18年的最自豪成绩。</p><p>日后如果温故而知新了，会继续追加更新。</p><p><del>要说为什么我当时用Onenote，因为年轻的我还是忠实的田牌教徒，用着田牌手机还要四处张扬那种。</del></p><h2 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h2><h3 id="Go中有statement与expression的区分"><a href="#Go中有statement与expression的区分" class="headerlink" title=" Go中有statement与expression的区分"></a><p6> Go中有statement与expression的区分</p6></h3><p><a href="https://golang.org/ref/spec#Expressions" target="_blank" rel="noopener">Go Spec#Expressions</a>：</p><blockquote><p>An expression specifies the computation of a value by applying operators and functions to operands.</p></blockquote><p><a href="https://golang.org/ref/spec#Statements" target="_blank" rel="noopener">Go Spec#Statements</a>：</p><blockquote><p>Statements control execution.</p></blockquote><p>那么，值得注意的是<code>i++</code>在go中是<code>statement</code>，不同于其它C-like语言。这就是<code>j = i++</code>等类似语句非法的原因。</p><h3 id=""><a href="#" class="headerlink" title=""></a><p7></p7></h3><p>用<code>+=</code>进行字符串拼接时会申请内存创建新的字符串，要注意频繁的操作会引起更密集的GC；</p><h3 id="-1"><a href="#-1" class="headerlink" title=""></a><p9></p9></h3><ul><li><code>map</code>是对<code>make()</code>创建的数据结构的引用；</li><li><code>map</code>里的键可以实任意可以使用<code>==</code>作比较的类型，而存储的值可以实任意类型；<br>  <a href="https://golang.org/ref/spec#Comparison_operators" target="_blank" rel="noopener">扩展阅读:Go的Comparable rules</a></li><li><code>map</code>是无序的，值得注意的是，<code>map</code>在使用<code>range</code>进行遍历的访问顺序亦是随机的，这应该算Go中最应该注意的坑之一了，据说这是在设计Go的时候有意为之的（It’s not a bug, it’s a feature!）。</li></ul>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;写在前面&quot;&gt;&lt;a href=&quot;#写在前面&quot; class=&quot;headerlink&quot; title=&quot;写在前面&quot;&gt;&lt;/a&gt;写在前面&lt;/h2&gt;&lt;p&gt;当初入坑Go的时候，怀着朝圣的心买了这本书来啃。本以为我这样的拖延症会拖到最后而不了了之，没想到硬是被我啃完了，因为书中的内
+      
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Hello World</title>
+    <link href="https://joe-xu.github.io/2018/09/03/hello-world/"/>
+    <id>https://joe-xu.github.io/2018/09/03/hello-world/</id>
+    <published>2018-09-03T12:33:02.164Z</published>
+    <updated>2018-09-03T12:32:50.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.
+      
+    
+    </summary>
+    
+    
+  </entry>
+  
+</feed>
