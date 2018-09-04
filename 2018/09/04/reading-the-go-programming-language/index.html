@@ -1,20 +1,25 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 《Go程序设计语言》读书笔记 · Thinking_Out_Loud</title><meta name="description" content="《Go程序设计语言》读书笔记 - Joe Xu"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://joe-xu.github.io/atom.xml" title="Thinking_Out_Loud"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="http://weibo.com/sunchongsheng" target="_blank" class="nav-list-link">WEIBO</a></li><li class="nav-list-item"><a href="https://github.com/pinggod" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">《Go程序设计语言》读书笔记</h1><div class="post-info">Sep 4, 2018</div><div class="post-content"><h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>当初入坑Go的时候，怀着朝圣的心买了这本书来啃。本以为我这样的拖延症会拖到最后而不了了之，没想到硬是被我啃完了，因为书中的内容确实引人入胜，除了深入浅出讲解Go外，还有许多扩展开来的相关知识和编程思想。</p>
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 《Go程序设计语言》读书笔记#0 · Thinking_Out_Loud</title><meta name="description" content="《Go程序设计语言》读书笔记#0 - Joe Xu"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/glados_icon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://joe-xu.github.io/atom.xml" title="Thinking_Out_Loud"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/glados_icon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">《Go程序设计语言》读书笔记#0</h1><div class="post-info">Sep 4, 2018</div><div class="post-content"><h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>当初入坑Go的时候，怀着朝圣的心买了这本书来啃。本以为我这样的拖延症会拖到最后而不了了之，没想到硬是被我啃完了，因为书中的内容确实引人入胜，除了深入浅出讲解Go外，还有许多扩展开来的相关知识和编程思想。</p>
+<a id="more"></a>
 <p>在啃书途中，也用Onenote整理的不少的笔记，主要是一些关键知识的摘抄，打算在懒癌没发作的时间整理成一系列blog，希望能在年末前更新完十三章，届时可能能作为我18年的最自豪成绩。</p>
 <p>日后如果温故而知新了，会继续追加更新。</p>
 <p><del>要说为什么我当时用Onenote，因为年轻的我还是忠实的田牌教徒，用着田牌手机还要四处张扬那种。</del></p>
-<h2 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h2><h3 id="Go中有statement与expression的区分"><a href="#Go中有statement与expression的区分" class="headerlink" title=" Go中有statement与expression的区分"></a><p6> Go中有statement与expression的区分</p6></h3><p><a href="https://golang.org/ref/spec#Expressions" target="_blank" rel="noopener">Go Spec#Expressions</a>：</p>
+<h2 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h2><h3 id="lt-P6-gt"><a href="#lt-P6-gt" class="headerlink" title="&lt; P6 &gt;"></a>&lt; P6 &gt;</h3><p>Go中有statement与expression的区分</p>
 <blockquote>
-<p>An expression specifies the computation of a value by applying operators and functions to operands.</p>
+<p><a href="https://golang.org/ref/spec#Expressions" target="_blank" rel="noopener">Go Spec#Expressions</a>：<br>An expression specifies the computation of a value by applying operators and functions to operands.</p>
 </blockquote>
-<p><a href="https://golang.org/ref/spec#Statements" target="_blank" rel="noopener">Go Spec#Statements</a>：</p>
 <blockquote>
-<p>Statements control execution.</p>
+<p><a href="https://golang.org/ref/spec#Statements" target="_blank" rel="noopener">Go Spec#Statements</a>：<br>Statements control execution.</p>
 </blockquote>
 <p>那么，值得注意的是<code>i++</code>在go中是<code>statement</code>，不同于其它C-like语言。这就是<code>j = i++</code>等类似语句非法的原因。</p>
-<h3 id=""><a href="#" class="headerlink" title=""></a><p7></p7></h3><p>用<code>+=</code>进行字符串拼接时会申请内存创建新的字符串，要注意频繁的操作会引起更密集的GC；</p>
-<h3 id="-1"><a href="#-1" class="headerlink" title=""></a><p9></p9></h3><ul>
+<h3 id="lt-P7-gt"><a href="#lt-P7-gt" class="headerlink" title="&lt; P7 &gt;"></a>&lt; P7 &gt;</h3><ul>
+<li>用<code>+=</code>进行字符串拼接时会申请内存创建新的字符串，要注意频繁的操作会引起更密集的GC；</li>
+</ul>
+<h3 id="lt-P9-gt"><a href="#lt-P9-gt" class="headerlink" title="&lt; P9 &gt;"></a>&lt; P9 &gt;</h3><ul>
 <li><code>map</code>是对<code>make()</code>创建的数据结构的引用；</li>
-<li><code>map</code>里的键可以实任意可以使用<code>==</code>作比较的类型，而存储的值可以实任意类型；<br>  <a href="https://golang.org/ref/spec#Comparison_operators" target="_blank" rel="noopener">扩展阅读:Go的Comparable rules</a></li>
-<li><code>map</code>是无序的，值得注意的是，<code>map</code>在使用<code>range</code>进行遍历的访问顺序亦是随机的，这应该算Go中最应该注意的坑之一了，据说这是在设计Go的时候有意为之的（It’s not a bug, it’s a feature!）。</li>
+<li><code>map</code>里的键可以实任意可以使用<code>==</code>作比较的类型，而存储的值可以实任意类型；<blockquote>
+<p><a href="https://golang.org/ref/spec#Comparison_operators" target="_blank" rel="noopener">扩展阅读：Go的Comparable rules</a></p>
+</blockquote>
+</li>
+<li><code>map</code>是无序的，值得注意的是，<code>map</code>在使用<code>range</code>进行遍历的访问顺序亦是随机的，这应该算Go中最应该注意的坑之一了，据说这是在设计Go的时候有意为之的（<em>It’s not a bug, it’s a feature!</em>）。</li>
 </ul>
 </div></article></div></main><footer><div class="paginator"><a href="/2018/09/03/hello-world/" class="next">NEXT</a></div><div class="copyright"><p>© 2015 - 2018 <a href="https://joe-xu.github.io">Joe Xu</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script></body></html>
