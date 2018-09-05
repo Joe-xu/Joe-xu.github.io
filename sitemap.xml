@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://joe-xu.github.io/2018/09/05/reading-the-go-programming-language-01/</loc>
+    
+    <lastmod>2018-09-05T14:47:27.132Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://joe-xu.github.io/2018/09/04/reading-the-go-programming-language/</loc>
     
-    <lastmod>2018-09-04T14:47:51.619Z</lastmod>
+    <lastmod>2018-09-05T13:19:27.268Z</lastmod>
     
   </url>
   
