@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://joe-xu.github.io/2018/09/06/login-shell-and-non-login-shell/</loc>
+    
+    <lastmod>2018-09-06T14:20:26.757Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://joe-xu.github.io/2018/09/05/reading-the-go-programming-language-01/</loc>
     
     <lastmod>2018-09-05T14:47:27.132Z</lastmod>
