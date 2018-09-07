@@ -1,0 +1,32 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 《Go程序设计语言》读书笔记#2 · Thinking_Out_Loud</title><meta name="description" content="《Go程序设计语言》读书笔记#2 - Joe Xu"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/glados_icon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://joe-xu.github.io/atom.xml" title="Thinking_Out_Loud"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/glados_icon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="https://github.com/Joe-xu" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">《Go程序设计语言》读书笔记#2</h1><div class="post-info">Sep 7, 2018</div><div class="post-content"><h2 id="第三章-基本数据类型"><a href="#第三章-基本数据类型" class="headerlink" title="第三章 基本数据类型"></a>第三章 基本数据类型</h2><p>主要围绕基本类型来讲的一章，仍记得当时看的时候按捺不住想要跳过的心，但是第三章还是非常重要的，有详细讲解最常用的<code>slice</code>内存模型避免误用，而且还穿插了一些有趣的小例程，譬如教你怎么画一个漂亮的分型图等。</p>
+<p>但是这里我只post自己整理的笔记。XD</p>
+<a id="more"></a>
+<h2 id="lt-P52-gt"><a href="#lt-P52-gt" class="headerlink" title="&lt; P52 &gt;"></a>&lt; P52 &gt;</h2><ul>
+<li><code>int</code>与<code>uint</code>的字节长度在不同实现的编译器下可能不同，即使是在同一个主机上；</li>
+<li><code>%</code>仅能用于整型；</li>
+<li>在Go中，余数符号永远与被除数相同，即<code>-5%3</code>与<code>-5%-3</code>同样得<code>-2</code>；</li>
+</ul>
+<h2 id="lt-P57-gt"><a href="#lt-P57-gt" class="headerlink" title="&lt; P57 &gt;"></a>&lt; P57 &gt;</h2><ul>
+<li><code>float</code>类型变量为0时作被除数为<em>可疑运算（dubious operation）</em>，若用整型在编译时会报错，可以表示正负无穷以及<code>NaN</code>（not a number）；</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> z <span class="keyword">float32</span></span><br><span class="line">fmt.Println(z, -z, <span class="number">1</span>/z, <span class="number">-1</span>/z, z/z)  <span class="comment">// 0 -0 +Inf -Inf NaN</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>math.NaN</code>函数也可以返回<code>NaN</code>，并且<code>NaN</code>的任何比较结果都是<code>false</code>，可以使用<code>math.IsNaN</code>函数判定；</li>
+</ul>
+<h2 id="lt-P63-gt"><a href="#lt-P63-gt" class="headerlink" title="&lt; P63 &gt;"></a>&lt; P63 &gt;</h2><ul>
+<li>如果<code>s</code>是空字符串，使用<code>s[0</code>]会引起<code>panic</code>；</li>
+<li>不存在<code>0</code>或<code>1</code>等到布尔类型的隐式转换，反过来同理；</li>
+</ul>
+<h2 id="lt-P65-gt"><a href="#lt-P65-gt" class="headerlink" title="&lt; P65 &gt;"></a>&lt; P65 &gt;</h2><ul>
+<li>字符串的值是不可更改的，所以字符串拷贝和子字符串都可以与原串共用同一空间，操作廉价，但是<code>string</code>类型变量可以重新赋值；</li>
+<li>内建函数<code>len</code>返回的是字符串的<code>byte</code>数，要在utf-8格式下计数可以用<code>utf8.RuneCountInString</code>方法；</li>
+</ul>
+<h2 id="lt-P70-gt"><a href="#lt-P70-gt" class="headerlink" title="&lt; P70 &gt;"></a>&lt; P70 &gt;</h2><ul>
+<li><strong>使用<code>range</code>遍历字符串时，会隐式对utf8解码，索引<code>i</code>也会跳动</strong>；</li>
+<li>每当utf8解码器遇到一个非预期的<code>byte</code>，不管是显式的调用<code>utf8.DecodeRuneInString</code>方法还是在<code>range</code>中隐式调用，会产生一个<em>replacement character</em>（\uFFFD），就是常见的黑底六角形加上白色问号的符号；</li>
+</ul>
+<h2 id="lt-P78-gt"><a href="#lt-P78-gt" class="headerlink" title="&lt; P78 &gt;"></a>&lt; P78 &gt;</h2><ul>
+<li>经编译器处理，无类型常量的精度比基本类型更大，且四则运算同样，大约有256 bit的精度；</li>
+<li>只有常量是无类型的，当常量被赋值给一个特定类型变量时会被隐式转换；</li>
+</ul>
+</div></article></div></main><footer><div class="paginator"><a href="/2018/09/06/login-shell-and-non-login-shell/" class="next">NEXT</a></div><div class="copyright"><p>© 2015 - 2018 <a href="https://joe-xu.github.io">Joe Xu</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script></body></html>
