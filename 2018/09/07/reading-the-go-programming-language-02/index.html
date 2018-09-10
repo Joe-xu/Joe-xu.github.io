@@ -7,11 +7,11 @@
 <li>在Go中，余数符号永远与被除数相同，即<code>-5%3</code>与<code>-5%-3</code>同样得<code>-2</code>；</li>
 </ul>
 <h2 id="lt-P57-gt"><a href="#lt-P57-gt" class="headerlink" title="&lt; P57 &gt;"></a>&lt; P57 &gt;</h2><ul>
-<li><code>float</code>类型变量为0时作被除数为<em>可疑运算（dubious operation）</em>，若用整型在编译时会报错，可以表示正负无穷以及<code>NaN</code>（not a number）；</li>
-</ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> z <span class="keyword">float32</span></span><br><span class="line">fmt.Println(z, -z, <span class="number">1</span>/z, <span class="number">-1</span>/z, z/z)  <span class="comment">// 0 -0 +Inf -Inf NaN</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>math.NaN</code>函数也可以返回<code>NaN</code>，并且<code>NaN</code>的任何比较结果都是<code>false</code>，可以使用<code>math.IsNaN</code>函数判定；</li>
+<li><p><code>float</code>类型变量为0时作被除数为<em>可疑运算（dubious operation）</em>，若用整型在编译时会报错，可以表示正负无穷以及<code>NaN</code>（not a number）；</p>
+  <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> z <span class="keyword">float32</span></span><br><span class="line">fmt.Println(z, -z, <span class="number">1</span>/z, <span class="number">-1</span>/z, z/z)  <span class="comment">// 0 -0 +Inf -Inf NaN</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>math.NaN</code>函数也可以返回<code>NaN</code>，并且<code>NaN</code>的任何比较结果都是<code>false</code>，可以使用<code>math.IsNaN</code>函数判定；</p>
+</li>
 </ul>
 <h2 id="lt-P63-gt"><a href="#lt-P63-gt" class="headerlink" title="&lt; P63 &gt;"></a>&lt; P63 &gt;</h2><ul>
 <li>如果<code>s</code>是空字符串，使用<code>s[0</code>]会引起<code>panic</code>；</li>
@@ -29,4 +29,4 @@
 <li>经编译器处理，无类型常量的精度比基本类型更大，且四则运算同样，大约有256 bit的精度；</li>
 <li>只有常量是无类型的，当常量被赋值给一个特定类型变量时会被隐式转换；</li>
 </ul>
-</div></article></div></main><footer><div class="paginator"><a href="/2018/09/06/login-shell-and-non-login-shell/" class="next">NEXT</a></div><div class="copyright"><p>© 2015 - 2018 <a href="https://joe-xu.github.io">Joe Xu</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script></body></html>
+</div></article></div></main><footer><div class="paginator"><a href="/2018/09/10/reading-the-go-programming-language-03/" class="prev">上一篇</a><a href="/2018/09/06/login-shell-and-non-login-shell/" class="next">下一篇</a></div><div class="copyright"><p>© 2015 - 2018 <a href="https://joe-xu.github.io">Joe Xu</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script></body></html>
