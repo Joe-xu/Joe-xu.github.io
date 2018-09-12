@@ -2,9 +2,37 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://joe-xu.github.io/2018/09/05/reading-the-go-programming-language-01/</loc>
+    
+    <lastmod>2018-09-12T14:40:30.150Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://joe-xu.github.io/2018/09/10/reading-the-go-programming-language-03/</loc>
+    
+    <lastmod>2018-09-12T14:40:27.356Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://joe-xu.github.io/2018/09/12/reading-the-go-programming-language-04/</loc>
     
-    <lastmod>2018-09-12T13:36:15.799Z</lastmod>
+    <lastmod>2018-09-12T14:40:25.116Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://joe-xu.github.io/2018/09/06/login-shell-and-non-login-shell/</loc>
+    
+    <lastmod>2018-09-12T14:38:19.722Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://joe-xu.github.io/2018/09/07/reading-the-go-programming-language-02/</loc>
+    
+    <lastmod>2018-09-12T14:35:49.675Z</lastmod>
     
   </url>
   
@@ -19,34 +47,6 @@
     <loc>https://joe-xu.github.io/about/index.html</loc>
     
     <lastmod>2018-09-12T13:28:18.247Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://joe-xu.github.io/2018/09/05/reading-the-go-programming-language-01/</loc>
-    
-    <lastmod>2018-09-10T13:22:50.387Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://joe-xu.github.io/2018/09/07/reading-the-go-programming-language-02/</loc>
-    
-    <lastmod>2018-09-10T13:22:18.102Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://joe-xu.github.io/2018/09/10/reading-the-go-programming-language-03/</loc>
-    
-    <lastmod>2018-09-10T13:21:47.037Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://joe-xu.github.io/2018/09/06/login-shell-and-non-login-shell/</loc>
-    
-    <lastmod>2018-09-06T14:22:06.189Z</lastmod>
     
   </url>
   
