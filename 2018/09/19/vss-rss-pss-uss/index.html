@@ -10,7 +10,7 @@
   
   <title>
     
-      说说login shell和non-login shell | Thinking_Out_Loud
+      Linux进程内存耗用的表述：VSS/RSS/PSS/USS | Thinking_Out_Loud
     
   </title>
   <link href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -126,8 +126,8 @@
 </header>
 
     <div id="article-banner">
-  <h2>说说login shell和non-login shell</h2>
-  <p class="post-date">2018-09-06</p>
+  <h2>Linux进程内存耗用的表述：VSS/RSS/PSS/USS</h2>
+  <p class="post-date">2018-09-19</p>
   <div class="arrow-down">
     <a href="javascript:;"></a>
   </div>
@@ -135,34 +135,45 @@
 <main class="app-body flex-box">
   <!-- Article START -->
   <article class="post-article">
-    <section class="markdown-content"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近又要在公司的CentOS上配一遍开发环境，这就避不了要编辑一番<code>PATH</code>，那么问题来了，这是要写在<code>/etc/profile</code>、<code>~/.profile</code>、<code>~/.bash_profile</code>还是<code>~/.bashrc</code>或<code>~/.bash_login</code>呢?首先，可以排除影响全局的<code>/etc/profile</code>，这改了听起来就是给后来的自己挖坑(还有一个<code>/etc/bash.bashrc</code>)。接着我们就要厘清后四个的区别了，这就要从<em>login shell</em>和<em>non-login shell</em>的区别说起。</p>
-<a id="more"></a>
-<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>不用Google，有事先找<code>man</code>。</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; man bash</span><br></pre></td></tr></table></figure>
-<p>我们在<code>bash</code>的手册中<em>INVOCATION</em>一节就可以找到<em>login shell</em>的定义：</p>
+    <section class="markdown-content"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>小白如我，写完程序想看看内存占用多少，打开了<code>top</code>却不知道看哪一项为准。</p>
+<h2 id="是什么？"><a href="#是什么？" class="headerlink" title="是什么？"></a>是什么？</h2><p>一开始我也是很懵。</p>
+<p>先一起看看它们的全称和释义：</p>
 <blockquote>
-<p>A login shell is one whose first character of argument zero is a <code>-</code>, or one started with the <code>--login</code> option.</p>
+<p>VSS(VSZ) - Virtual Set Size<br>The Virtual Set Size is a memory size assigned to a process ( program ) during the initial execution. The Virtual Set Size memory is simply a number of how much memory a process has available for its execution.</p>
 </blockquote>
-<p>顺便还有<em>interactive shell</em>的定义：</p>
+<p>VSS即由进程视角看到的所有可访问的内存大小，包括被置入交换区的部分，是由系统分配的虚拟内存。</p>
 <blockquote>
-<p>An interactive shell is one started without non-option arguments and without the <code>-c</code> option whose standard input and error are both connected to terminals (as determined by  isatty(3)),  or one started with the <code>-i</code> option.</p>
+<p>RSS - Resident Set Size<br>RSS is a memory currently used by a process. This is a actual number in kilobytes of how much RAM the current process is using.</p>
 </blockquote>
-<p>可知有：</p>
-<ul>
-<li><em>交互式的 login shell</em>：本地登录、ssh登录、<code>bash --login</code>、<code>su - &lt;user&gt;</code>;</li>
-<li><em>交互式的 non-login shell</em>：<code>su &lt;user&gt;</code>;</li>
-<li><em>非交互的 non-login shell</em>：<code>ssh example.com my-script-which-is-on-the-remote-machine</code>;</li>
-<li><em>非交互的 login shell</em>：脚本中使用<code>--login</code>(如<code>#!/bin/bash --login</code>);</li>
+<p>RSS则是进程在内存中实际占有的物理内存大小，正如其名是常驻集大小，所以不包括被置换进交换区的部分。</p>
+<blockquote>
+<p>PSS - Proportional Set Size<br>Pss is the amount of memory shared with other processes, accounted in a way that the amount is divided evenly between the processes that share it. This is memory that would not be released if the process was terminated, but is indicative of the amount that this process is “contributing”.</p>
+</blockquote>
+<p>由于不同进程间会在内存中共同享有一些内存，如共享库，所以PSS可以综合考虑共享进程数，将共享库的内存占用按比例算入到进程名下。</p>
+<blockquote>
+<p>USS - Unique Set Size<br>Uss is the set of pages that are unique to a process. This is the amount of memory that would be freed if the application was terminated right now.</p>
+</blockquote>
+<p>USS则是进程单独占用的内存，如堆和栈都是不能给别人看的。</p>
+<blockquote>
+<p>The unshared memory (USS) plus a process’s proportion of shared memory is reported as the PSS (Proportional Set Size). The USS and PSS only include physical memory usage. They do not include memory that has been swapped out to disk.</p>
+</blockquote>
+<p>又根据上面<code>smem(8)</code>的描述可知，USS和PSS都不包含被置入交换区的部分。</p>
+<p>所以一般来说有<code>VSS &gt;= RSS &gt;= PSS &gt;= USS</code>。</p>
+<h2 id="一个计算例子"><a href="#一个计算例子" class="headerlink" title="一个计算例子"></a>一个计算例子</h2><p>假设有进程A，程序大小500K，链接共享库大小2500K，现在进程实际加载了共享库的1000K以及自身程序的400K，且堆栈大小200K，其中的100K被置入交换区，那么有：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">VSS = 500K + 2500K + 200K = 3200K</span><br><span class="line">RSS = 400K + 1000K + 100K = 1500K</span><br><span class="line">PSS = 400K + 1000K/2 + 100K = 1000K <span class="comment"># 假设两个进程使用共享库</span></span><br><span class="line">USS = 400K + 100K = 500K</span><br></pre></td></tr></table></figure>
+<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><ul>
+<li>因为VSS还统计了进程尚未在内存中使用的大小（如进程<code>malloc</code>后，系统并不会第一时间分配内存）所以一般不用来衡量进程的内存占用；</li>
+<li>而RSS因为将进程使用的共享库纳入统计，即使这个库能被复数进程共享，所以单独使用RSS作为测量项也会有误导性；</li>
+<li>相对于RSS，PSS更适合作为进程内存占用的衡量项，而且<a href="https://unix.stackexchange.com/questions/34189/how-often-is-pss-value-updated-for-a-given-process-in-proc-pid-smaps" target="_blank" rel="noopener">不用担心PSS的更新时间</a>;</li>
+<li>USS则非常适合用来采样观察进程是否发生了内存泄漏。</li>
 </ul>
-<p>上述的情况并没有列全，可以通过如下方法区分login和non-login shell：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">echo</span> <span class="variable">$0</span></span><br><span class="line">-bash <span class="comment">#第一个字符是 "-"， 所以是 login shell。</span></span><br><span class="line"></span><br><span class="line">&gt; <span class="built_in">echo</span> <span class="variable">$0</span></span><br><span class="line">bash <span class="comment">#不是一个login shell。</span></span><br></pre></td></tr></table></figure>
-<h2 id="发生了什么"><a href="#发生了什么" class="headerlink" title="发生了什么"></a>发生了什么</h2><p>当一个<code>bash</code>是以<strong>交互式的login shell</strong>被调用时，它首先会读取<code>/etc/profile</code>文件，然后按照<code>~/.bash_profile</code>，<code>~/.bash_login</code>和<code>~/.profile</code>的顺序依次查找并读取，但这是短路式的，按顺序成功读取了三者之一就不继续往后查找了。最后在退出时会执行<code>~/.bash_logout</code>中的命令。</p>
-<p>而<strong>交互式的non-login shell</strong>则先后读取<code>/etc/bash.bashrc</code>和<code>~/.bashrc</code>。</p>
-<p><strong>非交互的non-login shell</strong>只展开环境变量<code>BASH_ENV</code>并执行其指向的文件。</p>
-<h2 id="总结一下"><a href="#总结一下" class="headerlink" title="总结一下"></a>总结一下</h2><p>如果需要统一交互式的<em>login shell</em>和<em>non-login shell</em>环境，我们可以在<code>~/.bashrc</code>中编写配置，然后在<code>~/.bash_profile</code>读取<code>~/.bashrc</code>。非交互式的情况一般与脚本有关，一般是主动载入环境变量(因为环境变量问题，dockerfile中也建议使用绝对路径)，所以暂且不管。</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
-<li><a href="http://blog.sciencenet.cn/blog-3238131-1037461.html" target="_blank" rel="noopener">login shell与non-login shell的区别</a></li>
-<li><a href="https://unix.stackexchange.com/questions/38175/difference-between-login-shell-and-non-login-shell" target="_blank" rel="noopener">difference-between-login-shell-and-non-login-shell</a></li>
+<li><a href="https://linuxconfig.org/ps-output-difference-between-vsz-vs-rss-memory-usage" target="_blank" rel="noopener">https://linuxconfig.org/ps-output-difference-between-vsz-vs-rss-memory-usage</a></li>
+<li><a href="https://elinux.org/Android_Memory_Usage" target="_blank" rel="noopener">https://elinux.org/Android_Memory_Usage</a></li>
+<li><a href="https://stackoverflow.com/questions/7880784/what-is-rss-and-vsz-in-linux-memory-management" target="_blank" rel="noopener">https://stackoverflow.com/questions/7880784/what-is-rss-and-vsz-in-linux-memory-management</a></li>
+<li><a href="https://stackoverflow.com/questions/22372960/is-this-explanation-about-vss-rss-pss-uss-accurate" target="_blank" rel="noopener">https://stackoverflow.com/questions/22372960/is-this-explanation-about-vss-rss-pss-uss-accurate</a></li>
+<li><a href="https://www.jianshu.com/p/9bf36aa82f90" target="_blank" rel="noopener">https://www.jianshu.com/p/9bf36aa82f90</a></li>
+<li><a href="https://linux.die.net/man/8/smem" target="_blank" rel="noopener">https://linux.die.net/man/8/smem</a></li>
 </ol>
 </section>
     <!-- Tags START -->
@@ -174,10 +185,6 @@
     <span class="tag-code">Linux</span>
   </a>
 
-  <a href="/tags#shell" >
-    <span class="tag-code">shell</span>
-  </a>
-
       </div>
     
     <!-- Tags END -->
@@ -186,20 +193,13 @@
   <div class="nav-container">
     <!-- reverse left and right to put prev and next in a more logic postition -->
     
-      <a class="nav-left" href="/2018/09/05/reading-the-go-programming-language-01/">
+      <a class="nav-left" href="/2018/09/12/reading-the-go-programming-language-04/">
         <span class="nav-arrow">← </span>
         
-          《Go程序设计语言》读书笔记#1
+          《Go程序设计语言》读书笔记#4
         
       </a>
     
-    
-      <a class="nav-right" href="/2018/09/07/reading-the-go-programming-language-02/">
-        
-          《Go程序设计语言》读书笔记#2
-        
-        <span class="nav-arrow"> →</span>
-      </a>
     
   </div>
 
@@ -221,7 +221,7 @@
   <div class="toc-main">
     <strong class="toc-title">Catalog</strong>
     
-      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#背景"><span class="toc-nav-text">背景</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#定义"><span class="toc-nav-text">定义</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#发生了什么"><span class="toc-nav-text">发生了什么</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#总结一下"><span class="toc-nav-text">总结一下</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#参考资料"><span class="toc-nav-text">参考资料</span></a></li></ol>
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#背景"><span class="toc-nav-text">背景</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#是什么？"><span class="toc-nav-text">是什么？</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#一个计算例子"><span class="toc-nav-text">一个计算例子</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#使用"><span class="toc-nav-text">使用</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#参考资料"><span class="toc-nav-text">参考资料</span></a></li></ol>
     
   </div>
 </aside>
@@ -231,7 +231,7 @@
 
 <script>
   (function () {
-    var url = 'https://joe-xu.github.io/2018/09/06/login-shell-and-non-login-shell/';
+    var url = 'https://joe-xu.github.io/2018/09/19/vss-rss-pss-uss/';
     var banner = ''
     if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
       $('#article-banner').css({
@@ -287,7 +287,7 @@
     var gitmentConfig = "";
     if (gitmentConfig !== 'undefined') {
       var gitment = new Gitment({
-        id: "说说login shell和non-login shell",
+        id: "Linux进程内存耗用的表述：VSS/RSS/PSS/USS",
         owner: "",
         repo: "",
         oauth: {
@@ -315,7 +315,7 @@
 <script>
   var disqus_shortname = '';
   
-  var disqus_url = 'https://joe-xu.github.io/2018/09/06/login-shell-and-non-login-shell/';
+  var disqus_url = 'https://joe-xu.github.io/2018/09/19/vss-rss-pss-uss/';
   
   (function(){
     var dsq = document.createElement('script');
