@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="Joe-xu&#39;s blog">
+  <meta name="keyword" content="hexo-theme, vuejs">
+  
+    <link rel="shortcut icon" type="image/ico" href="/images/glados_icon.png"/> 
+  
+  <title>
+    
+      我是如何用掉一天的：OpenWRT配v2ray | Thinking_Out_Loud
+    
+  </title>
+  <link href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdn.bootcss.com/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="//cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdn.bootcss.com/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdn.bootcss.com/nprogress/0.2.0/nprogress.min.js"></script>
+  <!-- <script src="/js/qrious.js"></script>
+<script src="/js/gitment.js"></script> -->
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+</head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png" />
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>Thinking_Out_Loud</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">Home</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">Tags</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">Archives</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">About</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">Home</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">Tags</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">Archives</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">About</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2>我是如何用掉一天的：OpenWRT配v2ray</h2>
+  <p class="post-date">2018-09-22</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><h1 id="一个小目标"><a href="#一个小目标" class="headerlink" title="一个小目标"></a>一个小目标</h1><p>今天把我的小Y从<em>lede-17.01</em>升级到了<em>openwrt-18.06.1</em>。对，lede又重新和openwrt合并了，XP。<br>很欣喜的是发现默认主题居然变好看了，交互体验也提升了很多，<del>这个开源小组终于有美工了</del>，升级过程暂且不表，今天我的小目标是在路由器上用<a href="https://www.v2ray.com/" target="_blank" rel="noopener">v2ray</a>搭好爱国透明代理。</p>
+<p>然而第一步就掉了链子，<a href="https://wiki.openwrt.org/doc/howto/wget-ssl-certs" target="_blank" rel="noopener">openwrt中默认的<code>wget</code>命令是由busybox提供的</a>，不支持https，所以需要重新安装一个。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; opkg update</span><br><span class="line">&gt; opkg install wget</span><br></pre></td></tr></table></figure>
+<p>然后就可以高高兴兴去下二进制安装包了，不料这mipsle的安装包竟然有17MB，一个主程序和辅助工具再加上IP数据集，我的小Y只有16MB的Flash，<del>真是天要亡我</del>。还是不死心，go在编译时去掉符号表能省不少空间，还能再挤挤，果然在谷歌第一页就翻到了大牛留下的笔记：</p>
+<blockquote>
+<p><a href="https://gobomb.github.io/post/cross-complie-v2ray/" target="_blank" rel="noopener">https://gobomb.github.io/post/cross-complie-v2ray/</a></p>
+</blockquote>
+<p>多亏大牛我才想起在openwrt官网下载的系统升级固件默认是没开FPU支持的，运行go程序会报<code>Illegal instruction</code>，就是说我要从固件开始自己编译，<del>抬头望天</del>。</p>
+<h1 id="挣扎"><a href="#挣扎" class="headerlink" title="挣扎"></a>挣扎</h1><p>翻出了还在15.05-cc版的本地仓库，用30KB的平均速度pull到了最新的代码，长征第一步。</p>
+<p>我沿用了之前搭建的环境，如果有需要从零开始搭建的同学可以参考<a href="https://openwrt.org/docs/guide-developer/build-system/install-buildsystem" target="_blank" rel="noopener">官方指引</a>,或者使用docker上的build-root镜像（<del>张口就来，其实我没实际用过</del>）。</p>
+<p>代码更新完后更新一下软件包：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;./scripts/feeds update -a</span><br><span class="line">&gt;./scripts/feeds install -a</span><br></pre></td></tr></table></figure>
+<h2 id="开始编译"><a href="#开始编译" class="headerlink" title="开始编译"></a>开始编译</h2><p>那么可以开始编译固件了</p>
+<p>首先把最重要的FPU支持打开,先进入内核选项菜单:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; make kernel_menuconfig</span><br></pre></td></tr></table></figure>
+<p>按下列路径进去把FPU支持开启</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Kernel <span class="built_in">type</span> ---&gt; MIPS FPU Emulator</span><br></pre></td></tr></table></figure>
+<p>然后再去把需要预装的包都勾上</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; make menuconfig</span><br></pre></td></tr></table></figure>
+<p>我的小Y是MT7620的板，开启5G-wifi需要安装<code>kmod-mt76</code>,如下：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kernel modules ---&gt; wireless drivers ---&gt; kmod-mt76</span><br></pre></td></tr></table></figure>
+<p>再去把usb自动挂载配置好（未雨绸缪）:</p>
+<blockquote>
+<ol>
+<li>添加USB相关支持<br>• Kernel modules —&gt; USB Support —&gt; &lt;<em>&gt; kmod-usb-core.   #默认已经选了<br>• Kernel modules —&gt; USB Support —&gt; &lt;</em>&gt; kmod-usb-ohci.   #默认已选 old usb1.0<br>• Kernel modules —&gt; USB Support —&gt; &lt;<em>&gt; kmod-usb-uhci.   # usb1.1<br>• Kernel modules —&gt; USB Support —&gt; &lt;</em>&gt; kmod-usb-storage.<br>• Kernel modules —&gt; USB Support —&gt; &lt;<em>&gt; kmod-usb-storage-extras.<br>• Kernel modules —&gt; USB Support —&gt; &lt;</em>&gt; kmod-usb2.   #默认已经选了 usb2.0<br>• 再加个usb3</li>
+<li>添加USB挂载<br>• Base system —&gt; &lt;*&gt;block-mount</li>
+<li>添加自动挂载工具<br>• Utilities —&gt; Filesystem —&gt; &lt;*&gt; badblocks</li>
+<li>添加文件系统支持<br>• Kernel modules —&gt; Filesystems —&gt; &lt;<em>&gt; kmod-fs-ext4 (移动硬盘EXT4格式选择)<br>• Kernel modules —&gt; Filesystems —&gt; &lt;</em>&gt; kmod-fs-vfat(FAT16 / FAT32 格式 选择)</li>
+<li>添加UTF8编码,CP437编码，ISO8859-1编码（否则即使/dev/中出现设备也无法挂载）<br>• Kernel modules —&gt; Native Language Support —&gt; &lt;<em>&gt; kmod-nls-utf8<br>• Utilities  —&gt; disc —&gt; &lt;</em>&gt; fdisk……………………………… manipulate disk partition table<br>• Utilities  —&gt; &lt;*&gt; usbutils…………………………….. USB devices listing utilities</li>
+</ol>
+</blockquote>
+<p>又因为后面需要设置iptables转发，所以需要在menuconfig中安装如下包,因为是自编译固件，所以有些不能通过官方feed安装，提前放在这里：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ip-tiny / ip-full</span><br><span class="line">ipset</span><br><span class="line">iptables</span><br><span class="line">iptables-mod-tproxy</span><br><span class="line">kmod-ipt-ipset</span><br><span class="line">kmod-ipt-tproxy</span><br><span class="line">libipset</span><br></pre></td></tr></table></figure>
+<p>首先先把之前的toolchain等清理掉，因为占用的磁盘真的大。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; make dirclean <span class="comment"># /bin /build_dir /staging_dir /toolchain /tmp /logs.</span></span><br></pre></td></tr></table></figure>
+<p>建议第一遍编译先用verbose模式输出日志，<del>一遍成功是不存在的</del>：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; make -j1 V=s</span><br></pre></td></tr></table></figure>
+<h2 id="报错"><a href="#报错" class="headerlink" title="报错"></a>报错</h2><p>编译过程中出现了这样的complain：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WARNING: Image file /openwrt/cc/build_dir/target-mipsel_24kc_musl/linux-ramips_mt7620/tmp/openwrt-ramips-mt7620-ex2700-squashfs-sysupgrade.bin is too big</span><br></pre></td></tr></table></figure>
+<p>这因为胡乱塞了很多东西，导致没办法兼容Flash只有4M的设备。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; vim ./target/linux/ramips/image/Makefile</span><br></pre></td></tr></table></figure>
+<p>修改220行的<code>ralink_default_fw_size_4M=3866624</code>值为更大的就好了。<br>而我的做法是：重进menuconfig，把忘记选上的profile选好，这样就只编译我需要的Y1固件了，XD</p>
+<hr>
+<p>漫无止境的编译和网络I/O…</p>
+<h1 id="十年后"><a href="#十年后" class="headerlink" title="十年后"></a>十年后</h1><p>新鲜出炉的固件在<code>/bin</code>目录下，又回到最初的起点。</p>
+<h2 id="编译V2ray"><a href="#编译V2ray" class="headerlink" title="编译V2ray"></a>编译V2ray</h2><p>根据<a href="https://www.v2ray.com/developer/intro/compile.html" target="_blank" rel="noopener">v2ray的官方指引</a>准备好编译环境。</p>
+<p>分别编译v2ray和v2ctl：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">cd</span> <span class="variable">$GOPATH</span>/src/v2ray/core/main</span><br><span class="line">&gt; GOARCH=mipsle GOMIPS=softfloat go build -ldflags <span class="string">'-w -s'</span> -o v2ray</span><br><span class="line">&gt; <span class="built_in">cd</span> <span class="variable">$GOPATH</span>/src/v2ray.com/ext/tools/control/main</span><br><span class="line">&gt; GOARCH=mipsle GOMIPS=softfloat go build -ldflags <span class="string">'-w -s'</span> -o v2ctl</span><br></pre></td></tr></table></figure>
+<p>题外话，我发现v2ray自带的构建工具vbuild并没有考虑GOPATH变量中存在两个路径的情况：我的GOPATH中第一个路径设定为第三方lib的目录，接着的是个人项目的目录，这样在<code>go get</code>时会自动把依赖库都放在第一个目录中，这就把它们和个人项目分开来了。</p>
+<h2 id="配置透明代理"><a href="#配置透明代理" class="headerlink" title="配置透明代理"></a>配置透明代理</h2><p>因为挂载了U盘，磁盘空间有余裕了，我打算先把透明代理配置好，先不用upx压缩。</p>
+<p>我的iptables设置：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">MY_VPS=xx.xx.xx.xx</span><br><span class="line">MY_PROXY_PORT=1060</span><br><span class="line">SKIP_IP=<span class="string">'0.0.0.0/8 10.0.0.0/8 127.0.0.0/8 169.254.0.0/16</span></span><br><span class="line"><span class="string">        172.16.0.0/12 192.168.0.0/16 224.0.0.0/4 240.0.0.0/4'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># new chain</span></span><br><span class="line">iptables -t nat -N V2RAY</span><br><span class="line">iptables -t mangle -N V2RAY_MARK</span><br><span class="line"></span><br><span class="line"><span class="comment"># tcp rule</span></span><br><span class="line">iptables -t nat -A V2RAY -d <span class="variable">$MY_VPS</span> -j RETURN   <span class="comment"># direct connect</span></span><br><span class="line">iptables -t nat -A V2RAY -p tcp -j RETURN -m mark --mark 0xff <span class="comment"># avoid loop</span></span><br><span class="line"><span class="keyword">for</span> IP <span class="keyword">in</span> <span class="variable">$SKIP_IP</span>;<span class="keyword">do</span></span><br><span class="line">    iptables -t nat -A V2RAY -d <span class="variable">$IP</span> -j RETURN</span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line">iptables -t nat -A V2RAY -p tcp -j REDIRECT --to-ports <span class="variable">$MY_PROXY_PORT</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># udp rule</span></span><br><span class="line">ip rule del fwmark 1</span><br><span class="line">ip rule add fwmark 1 table 100</span><br><span class="line">ip route add <span class="built_in">local</span> 0.0.0.0/0 dev lo table 100</span><br><span class="line">ip route flush cache</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> IP <span class="keyword">in</span> <span class="variable">$SKIP_IP</span>;<span class="keyword">do</span></span><br><span class="line">    iptables -t mangle -A V2RAY_MARK -d <span class="variable">$IP</span> -j RETURN</span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line">iptables -t mangle -A V2RAY_MARK -p udp -j TPROXY --on-port <span class="variable">$MY_PROXY_PORT</span> --tproxy-mark 0x01/0x01</span><br><span class="line"></span><br><span class="line"><span class="comment"># apply chain</span></span><br><span class="line">iptables -t nat -A PREROUTING -p tcp -j V2RAY <span class="comment"># 对局域网其他设备进行透明代理</span></span><br><span class="line">iptables -t nat -A OUTPUT -p tcp -j V2RAY <span class="comment"># 对本机进行透明代理</span></span><br><span class="line"></span><br><span class="line">iptables -t mangle -A PREROUTING -p udp -j V2RAY_MARK</span><br></pre></td></tr></table></figure>
+<p>我的v2ray设置，部分省略：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  "inbound": &#123; ... &#125;,</span><br><span class="line">  "inboundDetour": [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">"protocol"</span>: <span class="string">"dokodemo-door"</span>,</span><br><span class="line">      <span class="attr">"listen"</span>: <span class="string">"0.0.0.0"</span>,</span><br><span class="line">      "port": 1060, // 转发到这里</span><br><span class="line">      "sniffing": &#123;</span><br><span class="line">        "enabled": true,</span><br><span class="line">        "destOverride": [</span><br><span class="line">          "http",</span><br><span class="line">          <span class="string">"tls"</span></span><br><span class="line">        ]</span><br><span class="line">      &#125;,</span><br><span class="line">      "settings": &#123;</span><br><span class="line">        "network": "tcp,udp",</span><br><span class="line">        "followRedirect": true,</span><br><span class="line">        "timeout": 0</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  "outbound": &#123; ... &#125;,</span><br><span class="line">  "outboundDetour": [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">"protocol"</span>: <span class="string">"freedom"</span>,</span><br><span class="line">      <span class="attr">"settings"</span>: &#123;&#125;,</span><br><span class="line">      <span class="attr">"streamSettings"</span>: &#123;</span><br><span class="line">        <span class="attr">"sockopt"</span>: &#123;</span><br><span class="line">          <span class="attr">"mark"</span>: <span class="number">255</span> // MARK</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">"tag"</span>: <span class="string">"direct"</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">"protocol"</span>: <span class="string">"blackhole"</span>,</span><br><span class="line">      <span class="attr">"settings"</span>: &#123;&#125;,</span><br><span class="line">      <span class="attr">"tag"</span>: <span class="string">"block"</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  "routing": &#123;</span><br><span class="line">    "strategy": "rules",</span><br><span class="line">    "settings": &#123;</span><br><span class="line">      "domainStrategy": "AsIs",</span><br><span class="line">      "rules": [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">"type"</span>: <span class="string">"field"</span>,</span><br><span class="line">          <span class="attr">"outboundTag"</span>: <span class="string">"direct"</span>,</span><br><span class="line">          <span class="attr">"protocol"</span>: [</span><br><span class="line">            <span class="string">"bittorrent"</span></span><br><span class="line">          ]</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">"type"</span>: <span class="string">"field"</span>,</span><br><span class="line">          <span class="attr">"domain"</span>: [</span><br><span class="line">            <span class="string">"geosite:cn"</span>,</span><br><span class="line">            <span class="string">"geosite:speedtest"</span></span><br><span class="line">          ],</span><br><span class="line">          <span class="attr">"outboundTag"</span>: <span class="string">"direct"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">"type"</span>: <span class="string">"field"</span>,</span><br><span class="line">          <span class="attr">"ip"</span>: [</span><br><span class="line">            <span class="string">"geoip:cn"</span></span><br><span class="line">          ],</span><br><span class="line">          <span class="attr">"outboundTag"</span>: <span class="string">"direct"</span></span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="成功彼岸"><a href="#成功彼岸" class="headerlink" title="成功彼岸"></a>成功彼岸</h2><p><strong>正式宣布爱国特区成立，papapapa！</strong><br>不过有点悲伤的是运行v2ray之后的5分钟载荷一直在1.5左右浮动，不过实际的网络响应速度还是能接受。<br>先写到这里，其它内容放到之后再整理。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a href="https://gobomb.github.io/post/cross-complie-v2ray/" target="_blank" rel="noopener">https://gobomb.github.io/post/cross-complie-v2ray/</a></li>
+<li><a href="http://www.tldp.org/HOWTO/Adv-Routing-HOWTO/index.html" target="_blank" rel="noopener">http://www.tldp.org/HOWTO/Adv-Routing-HOWTO/index.html</a></li>
+<li><a href="https://wangchujiang.com/linux-command/c/iptables.html" target="_blank" rel="noopener">https://wangchujiang.com/linux-command/c/iptables.html</a></li>
+<li><a href="https://toutyrater.github.io/app/transparent_proxy.html" target="_blank" rel="noopener">https://toutyrater.github.io/app/transparent_proxy.html</a></li>
+<li><a href="https://wiki.openwrt.org/doc/howto/netfilter#configuration" target="_blank" rel="noopener">https://wiki.openwrt.org/doc/howto/netfilter#configuration</a></li>
+<li><a href="https://wiki.openwrt.org/inbox/doc/iptables_and_firewall" target="_blank" rel="noopener">https://wiki.openwrt.org/inbox/doc/iptables_and_firewall</a></li>
+</ol>
+</section>
+    <!-- Tags START -->
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#Linux" >
+    <span class="tag-code">Linux</span>
+  </a>
+
+  <a href="/tags#openwrt" >
+    <span class="tag-code">openwrt</span>
+  </a>
+
+      </div>
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/2018/09/19/vss-rss-pss-uss/">
+        <span class="nav-arrow">← </span>
+        
+          Linux进程内存耗用的表述：VSS/RSS/PSS/USS
+        
+      </a>
+    
+    
+  </div>
+
+    <!-- NAV END -->
+    <!-- 打赏 START -->
+    
+    <!-- 打赏 END -->
+    <!-- 二维码 START -->
+    
+    <!-- 二维码 END -->
+    
+      <!-- No Comment -->
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">Catalog</strong>
+    
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#一个小目标"><span class="toc-nav-text">一个小目标</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#挣扎"><span class="toc-nav-text">挣扎</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#开始编译"><span class="toc-nav-text">开始编译</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#报错"><span class="toc-nav-text">报错</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#十年后"><span class="toc-nav-text">十年后</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#编译V2ray"><span class="toc-nav-text">编译V2ray</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#配置透明代理"><span class="toc-nav-text">配置透明代理</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#成功彼岸"><span class="toc-nav-text">成功彼岸</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#参考资料"><span class="toc-nav-text">参考资料</span></a></li></ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'https://joe-xu.github.io/2018/09/22/openwrt-plus-v2ray/';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+     // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
+      $(this).css({
+        'cursor': 'default'
+      })
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      if (src !== 'http://file.muyutech.com/error-img.png') {
+        var imageW = $(this).width()
+        var imageH = $(this).height()
+        
+        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+        zoom = zoom < 1 ? 1 : zoom
+        zoom = zoom > 2 ? 2 : zoom
+        var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+        $('.image-view-wrap').addClass('wrap-active')
+        $('.image-view-wrap img').css({
+          'width': `${imageW}`,
+          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+        })
+        $('html').css('overflow', 'hidden')
+
+        $('.image-view-wrap').on('click', function() {
+          $(this).remove()
+          $('html').attr('style', '')
+        })
+      }
+    })
+
+   
+
+  })();
+</script>
+
+
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    &copy; 2018 | Proudly powered by <a href="https://hexo.io" target="_blank">Hexo</a>
+    <br>
+    Theme by <a href="https://github.com/yanm1ng">yanm1ng</a>
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+  </body>
+</html>
