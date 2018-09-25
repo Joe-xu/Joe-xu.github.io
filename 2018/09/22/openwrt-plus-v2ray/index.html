@@ -150,11 +150,11 @@
 <p>首先把最重要的FPU支持打开,先进入内核选项菜单:</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; make kernel_menuconfig</span><br></pre></td></tr></table></figure>
 <p>按下列路径进去把FPU支持开启</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Kernel <span class="built_in">type</span> ---&gt; MIPS FPU Emulator</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Kernel type ---&gt; MIPS FPU Emulator</span><br></pre></td></tr></table></figure>
 <p>然后再去把需要预装的包都勾上</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; make menuconfig</span><br></pre></td></tr></table></figure>
 <p>我的小Y是MT7620的板，开启5G-wifi需要安装<code>kmod-mt76</code>,如下：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kernel modules ---&gt; wireless drivers ---&gt; kmod-mt76</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kernel modules ---&gt; wireless drivers ---&gt; kmod-mt76</span><br></pre></td></tr></table></figure>
 <p>再去把usb自动挂载配置好（未雨绸缪）:</p>
 <blockquote>
 <ol>
@@ -166,13 +166,13 @@
 </ol>
 </blockquote>
 <p>又因为后面需要设置iptables转发，所以需要在menuconfig中安装如下包,因为是自编译固件，所以有些不能通过官方feed安装，提前放在这里：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ip-tiny / ip-full</span><br><span class="line">ipset</span><br><span class="line">iptables</span><br><span class="line">iptables-mod-tproxy</span><br><span class="line">kmod-ipt-ipset</span><br><span class="line">kmod-ipt-tproxy</span><br><span class="line">libipset</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ip-tiny / ip-full</span><br><span class="line">ipset</span><br><span class="line">iptables</span><br><span class="line">iptables-mod-tproxy</span><br><span class="line">kmod-ipt-ipset</span><br><span class="line">kmod-ipt-tproxy</span><br><span class="line">libipset</span><br></pre></td></tr></table></figure>
 <p>首先先把之前的toolchain等清理掉，因为占用的磁盘真的大。</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; make dirclean <span class="comment"># /bin /build_dir /staging_dir /toolchain /tmp /logs.</span></span><br></pre></td></tr></table></figure>
 <p>建议第一遍编译先用verbose模式输出日志，<del>一遍成功是不存在的</del>：</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; make -j1 V=s</span><br></pre></td></tr></table></figure>
 <h2 id="报错"><a href="#报错" class="headerlink" title="报错"></a>报错</h2><p>编译过程中出现了这样的complain：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WARNING: Image file /openwrt/cc/build_dir/target-mipsel_24kc_musl/linux-ramips_mt7620/tmp/openwrt-ramips-mt7620-ex2700-squashfs-sysupgrade.bin is too big</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WARNING: Image file /openwrt/cc/build_dir/target-mipsel_24kc_musl/linux-ramips_mt7620/tmp/openwrt-ramips-mt7620-ex2700-squashfs-sysupgrade.bin is too big</span><br></pre></td></tr></table></figure>
 <p>这因为胡乱塞了很多东西，导致没办法兼容Flash只有4M的设备。</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; vim ./target/linux/ramips/image/Makefile</span><br></pre></td></tr></table></figure>
 <p>修改220行的<code>ralink_default_fw_size_4M=3866624</code>值为更大的就好了。<br>而我的做法是：重进menuconfig，把忘记选上的profile选好，这样就只编译我需要的Y1固件了，XD</p>
@@ -203,12 +203,12 @@
       <div class="tags">
         <span>Tags:</span>
         
-  <a href="/tags#Linux" >
-    <span class="tag-code">Linux</span>
-  </a>
-
   <a href="/tags#openwrt" >
     <span class="tag-code">openwrt</span>
+  </a>
+
+  <a href="/tags#Linux" >
+    <span class="tag-code">Linux</span>
   </a>
 
       </div>
@@ -226,6 +226,13 @@
         
       </a>
     
+    
+      <a class="nav-right" href="/2018/09/25/edit-remote-file/">
+        
+          用VScode + rmate编辑远程文件
+        
+        <span class="nav-arrow"> →</span>
+      </a>
     
   </div>
 
