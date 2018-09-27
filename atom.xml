@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://joe-xu.github.io/"/>
-  <updated>2018-09-25T15:06:37.629Z</updated>
+  <updated>2018-09-27T15:33:28.301Z</updated>
   <id>https://joe-xu.github.io/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Linux系统负载</title>
+    <link href="https://joe-xu.github.io/2018/09/27/linux-load-averages/"/>
+    <id>https://joe-xu.github.io/2018/09/27/linux-load-averages/</id>
+    <published>2018-09-27T14:18:18.000Z</published>
+    <updated>2018-09-27T15:33:28.301Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>原文：<a href="http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html" target="_blank" rel="noopener">http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html</a></p></blockquote><h2 id="初识负载"><a href="#初识负载" class="headerlink" title="初识负载"></a>初识负载</h2><p>我们平时使用<code>top</code>或者<code>uptime</code>时可以看到打印输出的系统平均负载（方便起见，后文都简称负载），分别是1分钟、5分钟和15分钟，如：</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ uptime</span><br><span class="line"> 22:20:29 up 9 min,  0 users,  load average: 0.52, 0.58, 0.59</span><br></pre></td></tr></table></figure><p>我们一般这样解读负载：</p><ul><li>如果负载是<code>0.0</code>，那么系统就是空闲状态；</li><li>如果1分钟负载比5分钟或15分钟负载大，易见系统负载正在增长；</li><li>反之，如果1分钟负载比5分钟或15分钟负载小，那么系统负载正在降低；</li><li>如果负载高于CPU核数，那么系统中可能存在性能问题；</li></ul><p>但是系统负载到底是怎么统计的呢？</p><hr><p>先说结论：</p><p>在Linux中，负载是单位时间内的运行及等待运行的任务数，包含<code>TASK_UNINTERRUPTIBLE</code>状态（不受中断信号影响，一般是等待I/O和互斥锁的任务，在<code>ps</code>和<code>top</code>用<code>D</code>作标记）中的任务。也就是说，Linux的系统负载不仅仅是CPU的使用，还把I/O等系统资源加入到了统计中。</p><h2 id="为什么"><a href="#为什么" class="headerlink" title="为什么"></a>为什么</h2><p>为什么要将CPU外的资源纳入统计范围，下面是对这次commit的说明：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">From: Matthias Urlichs &lt;urlichs@smurf.sub.org&gt;</span><br><span class="line">Subject: Load average broken ?</span><br><span class="line">Date: Fri, 29 Oct 1993 11:37:23 +0200</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">The kernel only counts &quot;runnable&quot; processes when computing the load average.</span><br><span class="line">I don&apos;t like that; the problem is that processes which are swapping or</span><br><span class="line">waiting on &quot;fast&quot;, i.e. noninterruptible, I/O, also consume resources.</span><br><span class="line"></span><br><span class="line">It seems somewhat nonintuitive that the load average goes down when you</span><br><span class="line">replace your fast swap disk with a slow swap disk...</span><br><span class="line"></span><br><span class="line">Anyway, the following patch seems to make the load average much more</span><br><span class="line">consistent WRT the subjective speed of the system. And, most important, the</span><br><span class="line">load is still zero when nobody is doing anything. ;-)</span><br></pre></td></tr></table></figure><p>也就说如果仅统计CPU的使用，一个重I/O的程序从高速磁盘转到低速硬盘运行时，系统负载就会出现下降的情形。显然这从用户的角度看是不合理的，而且不便于反映系统性能问题，所以应该把整个系统的资源使用纳入统计范围。</p><h2 id="更好的度量项"><a href="#更好的度量项" class="headerlink" title="更好的度量项"></a>更好的度量项</h2><p>虽然系统负载考虑了整个系统资源，但是也不能单纯用负载除以CPU核数的方法判定一个系统的运行状况，这个时候用检验值去做平行比较反而更好。</p><p>因为负载值的模凌两可，我们可以考虑用下列的值来代替：</p><blockquote><ul><li>per-CPU utilization: eg, using mpstat -P ALL 1</li><li>per-process CPU utilization: eg, top, pidstat 1, etc.</li><li>per-thread run queue (scheduler) latency: eg, in /proc/PID/schedstats, delaystats, perf sched</li><li>CPU run queue latency: eg, in /proc/schedstat, perf sched.</li><li>CPU run queue length: eg, using vmstat 1 and the ‘r’ column.</li></ul></blockquote><h2 id="小节"><a href="#小节" class="headerlink" title="小节"></a>小节</h2><p>这里只摘抄转译了原文部分内容，并没有全部搬运。有兴趣继续深入的同学可以在原文阅览更多内容，地址见文首。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;blockquote&gt;
+&lt;p&gt;原文：&lt;a href=&quot;http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;http://www.
+      
+    
+    </summary>
+    
+    
+      <category term="Linux" scheme="https://joe-xu.github.io/tags/Linux/"/>
+    
+  </entry>
   
   <entry>
     <title>用VScode + rmate编辑远程文件</title>
@@ -58,9 +82,9 @@
     </summary>
     
     
-      <category term="openwrt" scheme="https://joe-xu.github.io/tags/openwrt/"/>
-    
       <category term="Linux" scheme="https://joe-xu.github.io/tags/Linux/"/>
+    
+      <category term="openwrt" scheme="https://joe-xu.github.io/tags/openwrt/"/>
     
   </entry>
   
