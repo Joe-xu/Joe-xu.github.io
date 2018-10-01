@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://joe-xu.github.io/"/>
-  <updated>2018-09-28T14:57:59.438Z</updated>
+  <updated>2018-10-01T13:49:35.494Z</updated>
   <id>https://joe-xu.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>《Go程序设计语言》读书笔记#5</title>
+    <link href="https://joe-xu.github.io/2018/10/01/reading-the-go-programming-language-05/"/>
+    <id>https://joe-xu.github.io/2018/10/01/reading-the-go-programming-language-05/</id>
+    <published>2018-10-01T13:10:39.000Z</published>
+    <updated>2018-10-01T13:49:35.494Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="题外"><a href="#题外" class="headerlink" title="题外"></a>题外</h2><p>我认为我们还是有必要先区分函数(function)和方法(method)的区别。两者最明显的区别就是方法是和对象绑定的。下面是<a href="https://stackoverflow.com/a/155655" target="_blank" rel="noopener">Stackoverflow上面的高票回答</a>:</p><blockquote><p>A <strong>function</strong> is a piece of code that is called by name. It can be passed data to operate on (i.e. the parameters) and can optionally return data (the return value). All data that is passed to a function is explicitly passed.</p><p>A <strong>method</strong> is a piece of code that is called by a name that is associated with an object. In most respects it is identical to a function except for two key differences:</p><ol><li>A method is implicitly passed the object on which it was called.</li><li>A method is able to operate on data that is contained within the class (remembering that an object is an instance of a class - the class is the definition, the object is an instance of that data).</li></ol></blockquote><p>函数的传参和返回值都是显式的，而方法则可以在内部访问、操作对象的成员变量，另外还有作用域等差异，因编程语言不同而各异。</p><h2 id="第六章-方法"><a href="#第六章-方法" class="headerlink" title="第六章 方法"></a>第六章 方法</h2><h3 id="lt-P156-gt"><a href="#lt-P156-gt" class="headerlink" title="&lt; P156 &gt;"></a>&lt; P156 &gt;</h3><ul><li>方法名不能与字段相同；</li><li>可以给同一个包内的任何具名类型声明方法，只要它的底层类型不是指针或<code>interface</code>；</li></ul><h3 id="lt-P158-gt"><a href="#lt-P158-gt" class="headerlink" title="&lt; P158 &gt;"></a>&lt; P158 &gt;</h3><ul><li>如果一个方法的接收器是指针，我们可以直接用变量调用（不用手动解引用），编译器会进行隐式转换；所以如果用不能获取到地址的接收器调用编译器会报错(不通过变量直接使用一个值，一般都无法进行寻址)；</li><li>如果类型<code>T</code>的方法有指针接收器类型，要避免拷贝<code>T</code>的实例，因为会违反内部不变原则；例如共享底层空间时，会发生无法预料的结果；</li><li><code>nil</code>也是合法的接收器值；</li></ul><h3 id="lt-P163-gt"><a href="#lt-P163-gt" class="headerlink" title="&lt; P163 &gt;"></a>&lt; P163 &gt;</h3><ul><li>编译器自顶向下查找方法，先是类型自身定义的，再到内嵌类型提升（promoted）上来的，然后是内嵌类型的再下一级……如果同一级中有同名方法，编译器会报错；</li></ul><h3 id="lt-P164-gt"><a href="#lt-P164-gt" class="headerlink" title="&lt; P164 &gt;"></a>&lt; P164 &gt;</h3><ul><li>可以用<code>t.f</code>或<code>(*t).f</code>生成方法值(<em>method value</em>),会绑定当前接收器，之后可以像普通函数一样调用；</li><li>可以用<code>T.f</code>或<code>(*T).f</code>生成方法表达式(<em>method expression</em>),在第一个参数指定接收器；</li></ul><p>上面两条在魔改公用库时非常好用，能保证API向后兼容 :D</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;题外&quot;&gt;&lt;a href=&quot;#题外&quot; class=&quot;headerlink&quot; title=&quot;题外&quot;&gt;&lt;/a&gt;题外&lt;/h2&gt;&lt;p&gt;我认为我们还是有必要先区分函数(function)和方法(method)的区别。两者最明显的区别就是方法是和对象绑定的。下面是&lt;a href
+      
+    
+    </summary>
+    
+    
+      <category term="Go" scheme="https://joe-xu.github.io/tags/Go/"/>
+    
+      <category term="读书笔记" scheme="https://joe-xu.github.io/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+    
+  </entry>
   
   <entry>
     <title>MySQL中的GROUP_CONCAT()</title>
