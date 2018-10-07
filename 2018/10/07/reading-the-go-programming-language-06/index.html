@@ -10,7 +10,7 @@
   
   <title>
     
-      《Go程序设计语言》读书笔记#5 | Thinking_Out_Loud
+      《Go程序设计语言》读书笔记#6 | Thinking_Out_Loud
     
   </title>
   <link href="//cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -125,8 +125,8 @@
 </header>
 
     <div id="article-banner">
-  <h2>《Go程序设计语言》读书笔记#5</h2>
-  <p class="post-date">2018-10-01</p>
+  <h2>《Go程序设计语言》读书笔记#6</h2>
+  <p class="post-date">2018-10-07</p>
   <div class="arrow-down">
     <a href="javascript:;"></a>
   </div>
@@ -134,33 +134,30 @@
 <main class="app-body flex-box">
   <!-- Article START -->
   <article class="post-article">
-    <section class="markdown-content"><h2 id="题外"><a href="#题外" class="headerlink" title="题外"></a>题外</h2><p>我认为我们还是有必要先区分函数(function)和方法(method)。两者最明显的区别就是方法是和对象绑定的。下面是<a href="https://stackoverflow.com/a/155655" target="_blank" rel="noopener">Stackoverflow上面的高票回答</a>:</p>
-<blockquote>
-<p>A <strong>function</strong> is a piece of code that is called by name. It can be passed data to operate on (i.e. the parameters) and can optionally return data (the return value). All data that is passed to a function is explicitly passed.</p>
-<p>A <strong>method</strong> is a piece of code that is called by a name that is associated with an object. In most respects it is identical to a function except for two key differences:</p>
-<ol>
-<li>A method is implicitly passed the object on which it was called.</li>
-<li>A method is able to operate on data that is contained within the class (remembering that an object is an instance of a class - the class is the definition, the object is an instance of that data).</li>
+    <section class="markdown-content"><h2 id="第七章-接口"><a href="#第七章-接口" class="headerlink" title="第七章 接口"></a>第七章 接口</h2><h3 id="lt-P176-gt"><a href="#lt-P176-gt" class="headerlink" title="&lt; P176 &gt;"></a>&lt; P176 &gt;</h3><p>在操作<code>interface</code>时，编译器不会对<code>T</code>和<code>*T</code>隐式转换，没有了简便的语法糖，因此<code>T</code>不拥有<code>*T</code>的方法；</p>
+<h3 id="lt-P182-gt"><a href="#lt-P182-gt" class="headerlink" title="&lt; P182 &gt;"></a>&lt; P182 &gt;</h3><ul>
+<li><code>interface</code>由两部分组成，<code>type</code>存储<code>type descriptor</code>，<code>value</code>一般存储指针；<code>interface</code>调用方法是间接调用，先根据<code>type descriptor</code>找到方法地址，再将<code>value</code>拷贝作为接收器传入；</li>
+<li><code>interface</code>可以两两比较或与<code>nil</code>比较；但是如果<code>value</code>中的类型是不可比较的，会发生<code>panic</code>；<strong>只有<code>type</code>与<code>type descriptor</code>都为<code>nil</code>时，与<code>nil</code>的比较才为真(受人诟病的坑之一)；</strong></li>
+<li>调试时可以用<code>%T</code>打印<code>type descriptor</code>，<code>fmt</code>通过反射获取；</li>
+</ul>
+<h3 id="lt-P188-gt"><a href="#lt-P188-gt" class="headerlink" title="&lt; P188 &gt;"></a>&lt; P188 &gt;</h3><p><code>Sort.Reverse</code>的实现很巧妙，用结构体<code>reverse</code>又包装了<code>interface</code>，<code>reverse</code>的<code>Less</code>方法调用匿名内嵌字段<code>interface</code>的<code>Less</code>方法，而<code>Reverse</code>函数又返回满足<code>sort.Interface</code>的<code>reverse</code>结构体；</p>
+<h3 id="lt-P191-195-gt"><a href="#lt-P191-195-gt" class="headerlink" title="&lt; P191-195 &gt;"></a>&lt; P191-195 &gt;</h3><ul>
+<li><code>http.Handler</code>是基本的<code>interface</code>，只要求<code>ServerHTTP</code>方法，作为<code>ListenAndServe</code>的第二个参数；</li>
+<li>为了分离逻辑，<code>net/http</code>包提供了<code>ServeMux</code>，将多个<code>http.Handler</code>集合为一个；在传入方法时用<code>http.HandlerFunc</code>将方法转为<code>http.Handler</code>，注意<code>http.HandlerFunc</code>是一种函数类型，作为<code>ServerHTTP</code>接收器，满足<code>http.Handler</code>接口，并在内部调用自己；</li>
+<li><code>net/http</code>提供了默认的<code>ServeMux</code>，即<code>DefaultServeMux</code>，在  <code>ListenAndServe</code>第二参数传入<code>nil</code>即可，用<code>http.HandeFunc</code>添加路由；</li>
+<li>注意每个请求都会单独创建一个<code>goroutine</code>；</li>
+</ul>
+<h3 id="lt-P196-gt"><a href="#lt-P196-gt" class="headerlink" title="&lt; P196 &gt;"></a>&lt; P196 &gt;</h3><p><code>errors.New</code>返回<code>errorString</code>结构体的指针，所以两个<code>New</code>出来的<code>error</code>比较是不相等的；</p>
+<h3 id="lt-P205-gt"><a href="#lt-P205-gt" class="headerlink" title="&lt; P205 &gt;"></a>&lt; P205 &gt;</h3><ul>
+<li>类型断言分两种：<ol>
+<li><code>x.(T)</code>，假如<code>T</code>是实际类型（concrete type）并且<code>x</code>为<code>interface</code>，断言检测通过返回<code>x</code>的<code>dynamic value</code>，类型当然是<code>T</code>，检测失败引发<code>panic</code>；</li>
+<li>假如<code>T</code>是<code>interface</code>，断言检测会检查<code>x</code>的<code>dynamic type</code>是否满足<code>T</code>，返回结果满足<code>T</code>，一般结果的方法集更大，失败同样引起<code>panic</code>；</li>
 </ol>
-</blockquote>
-<p>函数的传参和返回值都是显式的，而方法则可以在内部访问、操作对象的成员变量，另外还有作用域等差异，因编程语言不同而各异。</p>
-<h2 id="第六章-方法"><a href="#第六章-方法" class="headerlink" title="第六章 方法"></a>第六章 方法</h2><h3 id="lt-P156-gt"><a href="#lt-P156-gt" class="headerlink" title="&lt; P156 &gt;"></a>&lt; P156 &gt;</h3><ul>
-<li>方法名不能与字段相同；</li>
-<li>可以给同一个包内的任何具名类型声明方法，只要它的底层类型不是指针或<code>interface</code>；</li>
+</li>
+<li>无论<code>T</code>是何种类型，对<code>nil</code>的断言永远失败；</li>
+<li>期望两个返回值的断言检测失败不会<code>panic</code>，额外返回值为布尔值表示是否成功，失败时第一个返回值为该类型零值；</li>
 </ul>
-<h3 id="lt-P158-gt"><a href="#lt-P158-gt" class="headerlink" title="&lt; P158 &gt;"></a>&lt; P158 &gt;</h3><ul>
-<li>如果一个方法的接收器是指针，我们可以直接用变量调用（不用手动解引用），编译器会进行隐式转换；所以如果用不能获取到地址的接收器调用编译器会报错(不通过变量直接使用一个值，一般都无法进行寻址)；</li>
-<li>如果类型<code>T</code>的方法有指针接收器类型，要避免拷贝<code>T</code>的实例，因为会违反内部不变原则；例如共享底层空间时，会发生无法预料的结果；</li>
-<li><code>nil</code>也是合法的接收器值；</li>
-</ul>
-<h3 id="lt-P163-gt"><a href="#lt-P163-gt" class="headerlink" title="&lt; P163 &gt;"></a>&lt; P163 &gt;</h3><ul>
-<li>编译器自顶向下查找方法，先是类型自身定义的，再到内嵌类型提升（promoted）上来的，然后是内嵌类型的再下一级……如果同一级中有同名方法，编译器会报错；</li>
-</ul>
-<h3 id="lt-P164-gt"><a href="#lt-P164-gt" class="headerlink" title="&lt; P164 &gt;"></a>&lt; P164 &gt;</h3><ul>
-<li>可以用<code>t.f</code>或<code>(*t).f</code>生成方法值(<em>method value</em>),会绑定当前接收器，之后可以像普通函数一样调用；</li>
-<li>可以用<code>T.f</code>或<code>(*T).f</code>生成方法表达式(<em>method expression</em>),在第一个参数指定接收器；</li>
-</ul>
-<p>上面两条在魔改公用库时非常好用，能保证API向后兼容 :D</p>
+<h3 id="lt-P212-gt"><a href="#lt-P212-gt" class="headerlink" title="&lt; P212 &gt;"></a>&lt; P212 &gt;</h3><p>在<code>type switch</code>中，提取值之后的变量类型与当前<code>case</code>相同，除了多个条件并列时还是<code>interface{}</code>；(另外企图用<code>%T</code>打印<code>interface{}</code>类型的我简直犯傻，本来打印方法的传参就是<code>…interface{}</code>)</p>
 </section>
     <!-- Tags START -->
     
@@ -183,20 +180,13 @@
   <div class="nav-container">
     <!-- reverse left and right to put prev and next in a more logic postition -->
     
-      <a class="nav-left" href="/2018/09/28/group-concat-in-mysql/">
+      <a class="nav-left" href="/2018/10/01/reading-the-go-programming-language-05/">
         <span class="nav-arrow">← </span>
         
-          MySQL中的GROUP_CONCAT()
+          《Go程序设计语言》读书笔记#5
         
       </a>
     
-    
-      <a class="nav-right" href="/2018/10/07/reading-the-go-programming-language-06/">
-        
-          《Go程序设计语言》读书笔记#6
-        
-        <span class="nav-arrow"> →</span>
-      </a>
     
   </div>
 
@@ -218,7 +208,7 @@
   <div class="toc-main">
     <strong class="toc-title">Catalog</strong>
     
-      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#题外"><span class="toc-nav-text">题外</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#第六章-方法"><span class="toc-nav-text">第六章 方法</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P156-gt"><span class="toc-nav-text">&lt; P156 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P158-gt"><span class="toc-nav-text">&lt; P158 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P163-gt"><span class="toc-nav-text">&lt; P163 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P164-gt"><span class="toc-nav-text">&lt; P164 &gt;</span></a></li></ol></li></ol>
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#第七章-接口"><span class="toc-nav-text">第七章 接口</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P176-gt"><span class="toc-nav-text">&lt; P176 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P182-gt"><span class="toc-nav-text">&lt; P182 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P188-gt"><span class="toc-nav-text">&lt; P188 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P191-195-gt"><span class="toc-nav-text">&lt; P191-195 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P196-gt"><span class="toc-nav-text">&lt; P196 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P205-gt"><span class="toc-nav-text">&lt; P205 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P212-gt"><span class="toc-nav-text">&lt; P212 &gt;</span></a></li></ol></li></ol>
     
   </div>
 </aside>
@@ -228,7 +218,7 @@
 
 <script>
   (function () {
-    var url = 'https://joe-xu.github.io/2018/10/01/reading-the-go-programming-language-05/';
+    var url = 'https://joe-xu.github.io/2018/10/07/reading-the-go-programming-language-06/';
     var banner = ''
     if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
       $('#article-banner').css({
