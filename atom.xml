@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://joe-xu.github.io/"/>
-  <updated>2018-10-07T13:54:33.606Z</updated>
+  <updated>2018-10-08T14:17:11.533Z</updated>
   <id>https://joe-xu.github.io/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>SSH端口转发</title>
+    <link href="https://joe-xu.github.io/2018/10/08/ssh-tunnel-port-forwarding/"/>
+    <id>https://joe-xu.github.io/2018/10/08/ssh-tunnel-port-forwarding/</id>
+    <published>2018-10-08T13:14:24.000Z</published>
+    <updated>2018-10-08T14:17:11.533Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="一种场景"><a href="#一种场景" class="headerlink" title="一种场景"></a>一种场景</h2><p>想象这么一种场景，你在远程主机上刚装好Docker，启动Docker Daemon之后却被断开了ssh连接。仔细一想，原来daemon启动之后创建的网桥默认是<code>172.17.0.0/16</code>，正好和办公室的网段冲突了……<br>恭喜发财！这间办公室的电脑都不能连上你的服务器了，而且是内网服务器所以手机也是不行，但你想到你隔壁老哥的服务器是可以访问你的服务器的，可是问题是你又不好意思登录他的服务器随便乱搞。<br>那么端口转发就是我最后的救命稻草了。</p><h2 id="用ssh来转发端口"><a href="#用ssh来转发端口" class="headerlink" title="用ssh来转发端口"></a>用ssh来转发端口</h2><p>赞美SSH！！</p><h3 id="本地转发"><a href="#本地转发" class="headerlink" title="本地转发"></a>本地转发</h3><p>用<code>-L</code>选项来开启本地端口转发：</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; ssh -L [bind_address:]port:host:hostport [user@]hostname [<span class="built_in">command</span>]</span><br></pre></td></tr></table></figure><p>举个例子，我们有个服务器<code>A.com</code>可以访问<code>google.com</code>，现在要把我们本机的<code>9000</code>端口接收到的请求转发到<code>google.com</code>，可以这样：</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; ssh -L 9000:google.com:80 user@A.com</span><br></pre></td></tr></table></figure><p>现在我们打开浏览器访问<code>localhost:9000</code>就可以看一看谷歌首页了。</p><h3 id="远程转发"><a href="#远程转发" class="headerlink" title="远程转发"></a>远程转发</h3><p>和本地转发相反：</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; ssh -R [bind_address:]port:host:hostport [user@]hostname [<span class="built_in">command</span>]</span><br></pre></td></tr></table></figure><p>如果我们本机在内网中且运行了一个Web服务，监听端口是<code>9000</code>，现在我们想让外网机器访问这个服务但苦于没有公网IP。<br>除了配置NAT之外，我们可以用ssh的远程转发。假设我们在外网有一台服务器<code>B.com</code>，有公网IP那种，我们可以这样:</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; ssh -R 9000:localhost:3000 user@B.com</span><br></pre></td></tr></table></figure><p>注意，上面命令中的<code>localhost</code>是从<code>B.com</code>的角度看的，也就是将<code>B.com</code>在<code>3000</code>端口接收到的请求转发到我们本机的<code>9000</code>端口。所以外网机器访问<code>B.com:3000</code>就可以访问到我们内网本机的服务。</p><p>另外，远程转发默认是关闭的。我们要在本地主机<code>/etc/ssh/sshd_config</code>设置：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GatewayPorts yes</span><br></pre></td></tr></table></figure><p>再重启ssh服务：</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; service sshd restart</span><br></pre></td></tr></table></figure><h3 id="动态转发"><a href="#动态转发" class="headerlink" title="动态转发"></a>动态转发</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; ssh -D [bind_address:]port [user@]hostname [<span class="built_in">command</span>]</span><br></pre></td></tr></table></figure><p>这个用个例子就能知道怎么用了：</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; ssh -D 1080 C.com</span><br></pre></td></tr></table></figure><p>假如<code>C.com</code>能爱国上网，那么我们设置代理<code>localhost:1080</code>就可以访问谷歌。当然，本来这个是用来加密连接的。</p><h3 id="可以配合食用的选项"><a href="#可以配合食用的选项" class="headerlink" title="可以配合食用的选项"></a>可以配合食用的选项</h3><ul><li><code>-n</code>：将标准输入重定向到<code>/dev/null</code>，就是不接收输入，ssh在后台运行的时候必须设置这个；</li><li><code>-N</code>：不执行命令，正适合做端口转发；</li><li><code>-f</code>：让ssh在后台运行，隐式使用了<code>-n</code>，适合需要输入密码再转入后台运行的情景；</li><li><code>-T</code>：不分配TTY；</li></ul><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol><li><a href="https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html" target="_blank" rel="noopener">https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html</a></li><li><a href="https://blog.csdn.net/blade2001/article/details/8877250" target="_blank" rel="noopener">https://blog.csdn.net/blade2001/article/details/8877250</a></li><li><a href="https://stackoverflow.com/questions/42505339/why-use-t-with-ssh" target="_blank" rel="noopener">https://stackoverflow.com/questions/42505339/why-use-t-with-ssh</a></li></ol>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;一种场景&quot;&gt;&lt;a href=&quot;#一种场景&quot; class=&quot;headerlink&quot; title=&quot;一种场景&quot;&gt;&lt;/a&gt;一种场景&lt;/h2&gt;&lt;p&gt;想象这么一种场景，你在远程主机上刚装好Docker，启动Docker Daemon之后却被断开了ssh连接。仔细一想，原来d
+      
+    
+    </summary>
+    
+    
+      <category term="tools" scheme="https://joe-xu.github.io/tags/tools/"/>
+    
+  </entry>
   
   <entry>
     <title>《Go程序设计语言》读书笔记#6</title>

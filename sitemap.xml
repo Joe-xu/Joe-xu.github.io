@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://joe-xu.github.io/2018/10/08/ssh-tunnel-port-forwarding/</loc>
+    
+    <lastmod>2018-10-08T14:17:11.533Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://joe-xu.github.io/2018/10/07/reading-the-go-programming-language-06/</loc>
     
     <lastmod>2018-10-07T13:54:33.606Z</lastmod>
