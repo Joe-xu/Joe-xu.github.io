@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://joe-xu.github.io/"/>
-  <updated>2018-10-08T14:17:11.533Z</updated>
+  <updated>2018-10-10T14:05:02.295Z</updated>
   <id>https://joe-xu.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>《Go程序设计语言》读书笔记#7</title>
+    <link href="https://joe-xu.github.io/2018/10/10/reading-the-go-programming-language-07/"/>
+    <id>https://joe-xu.github.io/2018/10/10/reading-the-go-programming-language-07/</id>
+    <published>2018-10-10T13:45:14.000Z</published>
+    <updated>2018-10-10T14:05:02.295Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="第八章-goroutine和通道"><a href="#第八章-goroutine和通道" class="headerlink" title="第八章 goroutine和通道"></a>第八章 goroutine和通道</h2><h3 id="lt-P225-gt"><a href="#lt-P225-gt" class="headerlink" title="&lt; P225 &gt;"></a>&lt; P225 &gt;</h3><ul><li>同类型的<code>chan</code>可以用<code>==</code>比较，当两者指向同一<em>channel data structure</em>时结果为真；</li><li>容量大于零都算<em>buffered channel</em>；<code>cap</code>为零即没有缓冲，发送方要一直等到接收方接收；</li></ul><h3 id="lt-P229-gt"><a href="#lt-P229-gt" class="headerlink" title="&lt; P229 &gt;"></a>&lt; P229 &gt;</h3><ul><li><em>channel</em>被关闭后，后续的发送会引发<code>panic</code>，而后续的接收只会得到零值；可以增加第二个接受布尔类型的返回值检测是否关闭，更简便的方法是用<code>range</code>，<em>channel</em>关闭后<code>range</code>循环也结束；</li><li><strong>关闭一个已关闭的<em>channel</em>或值为<code>nil</code>的都会引发<code>panic</code></strong>；</li><li>当GC检测到<em>channel</em>是<em>unreachable</em>时，不管关闭与否都会将其GC，所以关闭channel不是必要的；</li></ul><h3 id="lt-P230-gt"><a href="#lt-P230-gt" class="headerlink" title="&lt; P230 &gt;"></a>&lt; P230 &gt;</h3><ul><li>加上助记符<code>&lt;-</code>变成<em>unidirectional channel</em>，如<code>&lt;-chan T</code>或<code>chan&lt;- T</code>，表示数据只能单方向传输，会在编译时检查是否有违法的操作；</li><li>对<em>read-only</em>的<em>channel</em>使用<code>close</code>方法会引发编译错误；</li><li>存在从双向<em>channel</em>到单向的隐式转换，但这种转换是不可逆的；</li></ul><h3 id="lt-P232-gt"><a href="#lt-P232-gt" class="headerlink" title="&lt; P232 &gt;"></a>&lt; P232 &gt;</h3><ul><li>用<code>len</code>和<code>cap</code>方法查看<em>channel</em>的当前缓存元素个数和容量；</li><li>不要把<em>channel</em>当作队列使用，因为<em>channel</em>和当前<em>goroutine</em>的时序联系很深，可能会阻塞运行；</li><li><em>goroutine leak</em>发生在<em>goroutine</em>向一个<em>channel</em>发送数据时被阻塞，而该<em>channel</em>之后也不会被取出数据，所以阻塞一直持续；</li></ul><h3 id="lt-P236-gt"><a href="#lt-P236-gt" class="headerlink" title="&lt; P236 &gt;"></a>&lt; P236 &gt;</h3><p><strong>使用匿名函数的<em>goroutine</em>也要注意变量的捕获，应该用传参或者新的局部变量捕获</strong>；</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> ch = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;)</span><br><span class="line">    <span class="keyword">for</span> _, s := <span class="keyword">range</span> <span class="string">"abcdefg"</span> &#123;</span><br><span class="line">        <span class="comment">//s := s // 用新的局部变量</span></span><br><span class="line">        <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(s <span class="keyword">rune</span>)</span></span> &#123;</span><br><span class="line">            fmt.Printf(<span class="string">"%c\n"</span>, s)</span><br><span class="line">            ch &lt;- <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line">        &#125;(s) <span class="comment">// 或者传参</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> <span class="keyword">range</span> <span class="string">"abcdefg"</span> &#123;</span><br><span class="line">        &lt;-ch</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h3 id="lt-P245-gt"><a href="#lt-P245-gt" class="headerlink" title="&lt; P245 &gt;"></a>&lt; P245 &gt;</h3><ul><li>没有<code>case</code>的<code>select</code>结构会<em>wait forever</em>；</li><li>当多个<code>case</code>都<em>ready</em>时，<code>select</code>随机选择一个运行；</li><li>使用<code>time.Tick</code>函数会新建一个<em>goroutine</em>，只建议全局都用到的时候才使用，不然会造成<em>goroutine leak</em>；一般推荐使用<code>time.NewTicker</code>,使用返回对象的<code>Stop</code>方法终止计时<em>goroutine</em>；</li><li><code>select</code>里的<code>case</code>只能存在<em>channel</em>的接收或发送操作；</li><li>对值为<code>nil</code>的<em>channel</em>的接收或发送都永远阻塞；配合<code>select</code>可以作为选项开关；</li><li><code>select</code>加入<code>default</code>可以用作对<em>channel</em>的查询（<em>polling channel</em>）；否则会停留直到其中一个<code>case</code>可行；</li></ul><h3 id="lt-P252-gt"><a href="#lt-P252-gt" class="headerlink" title="&lt; P252 &gt;"></a>&lt; P252 &gt;</h3><p>poll一个<em>closed channel</em>可以取得零值（以及<code>false</code>）。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;第八章-goroutine和通道&quot;&gt;&lt;a href=&quot;#第八章-goroutine和通道&quot; class=&quot;headerlink&quot; title=&quot;第八章 goroutine和通道&quot;&gt;&lt;/a&gt;第八章 goroutine和通道&lt;/h2&gt;&lt;h3 id=&quot;lt-P225-g
+      
+    
+    </summary>
+    
+    
+      <category term="Go" scheme="https://joe-xu.github.io/tags/Go/"/>
+    
+      <category term="读书笔记" scheme="https://joe-xu.github.io/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+    
+  </entry>
   
   <entry>
     <title>SSH端口转发</title>
