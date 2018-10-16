@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="Joe-xu&#39;s blog">
+  <meta name="keyword" content="hexo-theme, vuejs">
+  
+    <link rel="shortcut icon" type="image/ico" href="/images/glados_icon.png"/> 
+  
+  <title>
+    
+      写一个Chrome扩展 | Thinking_Out_Loud
+    
+  </title>
+  <link href="//cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdn.staticfile.org/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdn.staticfile.org/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdn.staticfile.org/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdn.staticfile.org/nprogress/0.2.0/nprogress.min.js"></script>
+  <!-- <script src="/js/qrious.js"></script>
+<script src="/js/gitment.js"></script> -->
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.staticfile.org/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+</head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png" />
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>Thinking_Out_Loud</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">Home</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">Tags</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">Archives</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">About</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">Home</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">Tags</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">Archives</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">About</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2>写一个Chrome扩展</h2>
+  <p class="post-date">2018-10-16</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><h2 id="伪需求"><a href="#伪需求" class="headerlink" title="伪需求"></a>伪需求</h2><p>在公司里想要从外网电脑往内网电脑搬运资料<del>和一些代码</del>只能通过内部的IM里的“文件助手”中转，大大降低了面向搜索引擎编程的生产效率。所以亟需一个在浏览器右键菜单就可以直接发送选中文本等的Chrome插件。</p>
+<h2 id="分析一下问题"><a href="#分析一下问题" class="headerlink" title="分析一下问题"></a>分析一下问题</h2><p>好在IM有Web端，我直接写一个扩展使用Chrome的API就可以操作数据了。初步设想是在页面内选中文本后，右键呼出菜单，菜单里有扩展的选项用IM里的接口将选中文本POST到“文件助手”的聊天记录里，然后信息就可以同步到内网机上了。</p>
+<p>接着打开Chrome的控制台，往“文件助手”发几条信息，观察一下哪些接口是发送信息需要的。非常幸运的是，只有一个<code>sendMessage.do</code>是需要调用的，请求参数有<code>groupID</code>和<code>toUserId</code>，前者应该是标识一个会话，后者则是“文件助手”的uid了，余下的还有一些消息内容相关的参数。至于鉴权用的token则都放在了cookie里。另外，在测试这个接口的时候，我发现只要把<code>groupId</code>改为其他人的就可以乱入其他人的“文件助手”聊天窗口，不知道这算<em>BUG</em>还是<em>feature</em>，XD。</p>
+<h2 id="Chrome"><a href="#Chrome" class="headerlink" title="Chrome."></a>Chrome.<api></api></h2><p>其实跟着<a href="https://developer.chrome.com/extensions/getstarted" target="_blank" rel="noopener">官方的教程</a>走一遍就可以知道扩展的开发方式，主要是对<code>manifest.json</code>文件的配置还有Chrome API的调用。</p>
+<p>首先，根据需求，我们需要操作右键菜单和发送网络请求，容易找到：</p>
+<h3 id="chrome-contextMenus"><a href="#chrome-contextMenus" class="headerlink" title="chrome.contextMenus"></a>chrome.contextMenus</h3><p>这就是操作右键菜单的API，大概流程就是在扩展安装时配置菜单项，点击事件。</p>
+<p>如下就配置好了一个右键菜单项：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">chrome.contextMenus.create(&#123;</span><br><span class="line">        title: <span class="string">'Send "%s" to G'</span>,    <span class="comment">//  '%s' 是已选中文本的占位符</span></span><br><span class="line">        type: <span class="string">'normal'</span>,</span><br><span class="line">        id: SELECTION_MENU_ID,</span><br><span class="line">        contexts: [<span class="string">'selection'</span>] <span class="comment">//  在选中文本时出现，'image'则是在右击图像元素是出现</span></span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+<p>如下配置事件回调，后期增加了一个发送图片的功能。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">chrome.contextMenus.onClicked.addListener(<span class="function"><span class="keyword">function</span> (<span class="params">info</span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">switch</span> (info.menuItemId) &#123;</span><br><span class="line">            <span class="keyword">case</span> SELECTION_MENU_ID:</span><br><span class="line">                handleTextSelected(info);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> IMAGE_MENU_ID:</span><br><span class="line">                handleImgSelected(info);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">"Unexpected contextmenu ID"</span>);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="chrome-storage"><a href="#chrome-storage" class="headerlink" title="chrome.storage"></a>chrome.storage</h3><p>因为每个人的<code>groupId</code>都不同，不能硬编码到代码中，我们可以使用<a href="https://developer.chrome.com/apps/storage" target="_blank" rel="noopener">chrome.storage</a>存储到本地。</p>
+<h3 id="跨域XMLHttpRequest"><a href="#跨域XMLHttpRequest" class="headerlink" title="跨域XMLHttpRequest"></a>跨域XMLHttpRequest</h3><p>发送网络请求遇到跨域问题时可以在<code>manifest.json</code>申请这个网站的权限来让扩展规避同源限制，也可以使用通配符的方式申请所有网站的权限，注意不能漏掉结尾的<code>/</code>。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"name"</span>: <span class="string">"My extension"</span>,</span><br><span class="line">  ...</span><br><span class="line">  "permissions": [</span><br><span class="line">    <span class="string">"*://*/"</span></span><br><span class="line">  ],</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="回调地狱"><a href="#回调地狱" class="headerlink" title="回调地狱"></a>回调地狱</h2><p>在之后又增加了发送图片的功能，但是发送图片居然先后调用了4个接口才完成操作，3个以上的回调就是一个回调地狱了啊！不过好在可以用<code>Promise</code>包装调用，包装后如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">downloadImg(srcUrl)</span><br><span class="line">        .then(<span class="function">(<span class="params">imgBlob</span>) =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">let</span> fileName = srcUrl.substr(srcUrl.lastIndexOf(<span class="string">'/'</span>) + <span class="number">1</span>).split(<span class="string">'?'</span>)[<span class="number">0</span>];</span><br><span class="line">            <span class="keyword">return</span> &#123; <span class="string">'fileName'</span>: fileName, <span class="string">'imgBlob'</span>: imgBlob &#125;</span><br><span class="line">        &#125;)</span><br><span class="line">        .then(uploadImg)</span><br><span class="line">        .then(getFileInfo)</span><br><span class="line">        .then(<span class="function">(<span class="params">res</span>)=&gt;</span>&#123;</span><br><span class="line">            <span class="keyword">return</span> res.fileInfo;</span><br><span class="line">        &#125;)</span><br><span class="line">        .then(sendImgMsg)</span><br><span class="line">        .then(saveFile);</span><br></pre></td></tr></table></figure>
+<h2 id="后话"><a href="#后话" class="headerlink" title="后话"></a>后话</h2><p>打算再加上一个将页面作为PDF发送的功能，不过这可能又是一个TODO。</p>
+</section>
+    <!-- Tags START -->
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#tools" >
+    <span class="tag-code">tools</span>
+  </a>
+
+  <a href="/tags#Javascript" >
+    <span class="tag-code">Javascript</span>
+  </a>
+
+      </div>
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/2018/10/10/reading-the-go-programming-language-07/">
+        <span class="nav-arrow">← </span>
+        
+          《Go程序设计语言》读书笔记#7
+        
+      </a>
+    
+    
+  </div>
+
+    <!-- NAV END -->
+    <!-- 打赏 START -->
+    
+    <!-- 打赏 END -->
+    <!-- 二维码 START -->
+    
+    <!-- 二维码 END -->
+    
+      <!-- No Comment -->
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">Catalog</strong>
+    
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#伪需求"><span class="toc-nav-text">伪需求</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#分析一下问题"><span class="toc-nav-text">分析一下问题</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#Chrome"><span class="toc-nav-text">Chrome.</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#chrome-contextMenus"><span class="toc-nav-text">chrome.contextMenus</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#chrome-storage"><span class="toc-nav-text">chrome.storage</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#跨域XMLHttpRequest"><span class="toc-nav-text">跨域XMLHttpRequest</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#回调地狱"><span class="toc-nav-text">回调地狱</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#后话"><span class="toc-nav-text">后话</span></a></li></ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'https://joe-xu.github.io/2018/10/16/chrome-extention/';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+     // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
+      $(this).css({
+        'cursor': 'default'
+      })
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      if (src !== 'http://file.muyutech.com/error-img.png') {
+        var imageW = $(this).width()
+        var imageH = $(this).height()
+        
+        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+        zoom = zoom < 1 ? 1 : zoom
+        zoom = zoom > 2 ? 2 : zoom
+        var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+        $('.image-view-wrap').addClass('wrap-active')
+        $('.image-view-wrap img').css({
+          'width': `${imageW}`,
+          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+        })
+        $('html').css('overflow', 'hidden')
+
+        $('.image-view-wrap').on('click', function() {
+          $(this).remove()
+          $('html').attr('style', '')
+        })
+      }
+    })
+
+   
+
+  })();
+</script>
+
+
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    &copy; 2018 | Proudly powered by <a href="https://hexo.io" target="_blank">Hexo</a>
+    <br>
+    Theme by <a href="https://github.com/yanm1ng">yanm1ng</a>
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdn.staticfile.org/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdn.staticfile.org/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+  </body>
+</html>
