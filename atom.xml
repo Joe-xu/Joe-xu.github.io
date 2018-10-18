@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://joe-xu.github.io/"/>
-  <updated>2018-10-16T14:27:27.325Z</updated>
+  <updated>2018-10-18T13:37:26.412Z</updated>
   <id>https://joe-xu.github.io/</id>
   
   <author>
@@ -17,9 +17,34 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>《Go程序设计语言》读书笔记#8</title>
+    <link href="https://joe-xu.github.io/2018/10/18/reading-the-go-programming-language-08/"/>
+    <id>https://joe-xu.github.io/2018/10/18/reading-the-go-programming-language-08/</id>
+    <published>2018-10-18T13:27:31.000Z</published>
+    <updated>2018-10-18T13:37:26.412Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="第九章-使用共享变量实现并发"><a href="#第九章-使用共享变量实现并发" class="headerlink" title="第九章 使用共享变量实现并发"></a>第九章 使用共享变量实现并发</h2><h3 id="lt-P262-gt"><a href="#lt-P262-gt" class="headerlink" title="&lt; P262 &gt;"></a>&lt; P262 &gt;</h3><ul><li>可以用容量为1的<code>channel</code>实现互斥锁；</li><li>通常互斥锁的声明紧贴在要守卫的变量前，如果偏离这个原则，应该在文档中说明；</li><li>如果返回的变量需要互斥锁，可以使用<code>defer</code>解锁；</li></ul><h3 id="lt-P266-gt"><a href="#lt-P266-gt" class="headerlink" title="&lt; P266 &gt;"></a>&lt; P266 &gt;</h3><ul><li><code>sync.RWMutex</code>只有在多数是读取的情况下才更有效，因为<code>RWMutex</code>的实现要求更多内部标记，当用作非争用锁时可能比常规的更慢；</li><li><strong>只读的变量也应该互斥</strong>；第一是防止在其它操作的中间步骤读取，第二是防止多核情况下，处理器没有将cache提交到主内存；</li></ul><h3 id="lt-P271-gt"><a href="#lt-P271-gt" class="headerlink" title="&lt; P271 &gt;"></a>&lt; P271 &gt;</h3><p>在<code>go build</code>和<code>go test</code>后加上选项<code>-race</code>可以检测运行中出现的<em>data race</em>；</p><h3 id="lt-P280-gt"><a href="#lt-P280-gt" class="headerlink" title="&lt; P280 &gt;"></a>&lt; P280 &gt;</h3><ul><li><em>goroutine</em>的栈可以增长，一般初始大小是2KB；</li><li>Go使用<em>m:n scheduling</em>，m指<code>goroutine</code>数，n指系统线程数；</li><li><em>goroutine</em>在<code>time.Sleep</code>或<code>channel</code>阻塞或互斥锁时会被<em>scheduler</em>置入休眠态，即不占用系统线程，但是如果是IO阻塞或者调用非Go函数则占用且其线程数不纳入<code>GOMAXPROCS</code>；</li><li>环境变量<code>GOMAXPROCS</code>指m:n中的n，默认值是cpu数；</li><li><em>goroutine</em>没有供编程人员使用的标识；</li></ul>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;第九章-使用共享变量实现并发&quot;&gt;&lt;a href=&quot;#第九章-使用共享变量实现并发&quot; class=&quot;headerlink&quot; title=&quot;第九章 使用共享变量实现并发&quot;&gt;&lt;/a&gt;第九章 使用共享变量实现并发&lt;/h2&gt;&lt;h3 id=&quot;lt-P262-gt&quot;&gt;&lt;a hr
+      
+    
+    </summary>
+    
+    
+      <category term="Go" scheme="https://joe-xu.github.io/tags/Go/"/>
+    
+      <category term="读书笔记" scheme="https://joe-xu.github.io/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+    
+  </entry>
+  
+  <entry>
     <title>写一个Chrome扩展</title>
-    <link href="https://joe-xu.github.io/2018/10/16/chrome-extention/"/>
-    <id>https://joe-xu.github.io/2018/10/16/chrome-extention/</id>
+    <link href="https://joe-xu.github.io/2018/10/16/chrome-extension/"/>
+    <id>https://joe-xu.github.io/2018/10/16/chrome-extension/</id>
     <published>2018-10-16T13:16:02.000Z</published>
     <updated>2018-10-16T14:27:27.325Z</updated>
     

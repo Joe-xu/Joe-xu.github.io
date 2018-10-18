@@ -10,7 +10,7 @@
   
   <title>
     
-      《Go程序设计语言》读书笔记#7 | Thinking_Out_Loud
+      《Go程序设计语言》读书笔记#8 | Thinking_Out_Loud
     
   </title>
   <link href="//cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -125,8 +125,8 @@
 </header>
 
     <div id="article-banner">
-  <h2>《Go程序设计语言》读书笔记#7</h2>
-  <p class="post-date">2018-10-10</p>
+  <h2>《Go程序设计语言》读书笔记#8</h2>
+  <p class="post-date">2018-10-18</p>
   <div class="arrow-down">
     <a href="javascript:;"></a>
   </div>
@@ -134,36 +134,23 @@
 <main class="app-body flex-box">
   <!-- Article START -->
   <article class="post-article">
-    <section class="markdown-content"><h2 id="第八章-goroutine和通道"><a href="#第八章-goroutine和通道" class="headerlink" title="第八章 goroutine和通道"></a>第八章 goroutine和通道</h2><h3 id="lt-P225-gt"><a href="#lt-P225-gt" class="headerlink" title="&lt; P225 &gt;"></a>&lt; P225 &gt;</h3><ul>
-<li>同类型的<code>chan</code>可以用<code>==</code>比较，当两者指向同一<em>channel data structure</em>时结果为真；</li>
-<li>容量大于零都算<em>buffered channel</em>；<code>cap</code>为零即没有缓冲，发送方要一直等到接收方接收；</li>
+    <section class="markdown-content"><h2 id="第九章-使用共享变量实现并发"><a href="#第九章-使用共享变量实现并发" class="headerlink" title="第九章 使用共享变量实现并发"></a>第九章 使用共享变量实现并发</h2><h3 id="lt-P262-gt"><a href="#lt-P262-gt" class="headerlink" title="&lt; P262 &gt;"></a>&lt; P262 &gt;</h3><ul>
+<li>可以用容量为1的<code>channel</code>实现互斥锁；</li>
+<li>通常互斥锁的声明紧贴在要守卫的变量前，如果偏离这个原则，应该在文档中说明；</li>
+<li>如果返回的变量需要互斥锁，可以使用<code>defer</code>解锁；</li>
 </ul>
-<h3 id="lt-P229-gt"><a href="#lt-P229-gt" class="headerlink" title="&lt; P229 &gt;"></a>&lt; P229 &gt;</h3><ul>
-<li><em>channel</em>被关闭后，后续的发送会引发<code>panic</code>，而后续的接收只会得到零值；可以增加第二个接受布尔类型的返回值检测是否关闭，更简便的方法是用<code>range</code>，<em>channel</em>关闭后<code>range</code>循环也结束；</li>
-<li><strong>关闭一个已关闭的<em>channel</em>或值为<code>nil</code>的都会引发<code>panic</code></strong>；</li>
-<li>当GC检测到<em>channel</em>是<em>unreachable</em>时，不管关闭与否都会将其GC，所以关闭channel不是必要的；</li>
+<h3 id="lt-P266-gt"><a href="#lt-P266-gt" class="headerlink" title="&lt; P266 &gt;"></a>&lt; P266 &gt;</h3><ul>
+<li><code>sync.RWMutex</code>只有在多数是读取的情况下才更有效，因为<code>RWMutex</code>的实现要求更多内部标记，当用作非争用锁时可能比常规的更慢；</li>
+<li><strong>只读的变量也应该互斥</strong>；第一是防止在其它操作的中间步骤读取，第二是防止多核情况下，处理器没有将cache提交到主内存；</li>
 </ul>
-<h3 id="lt-P230-gt"><a href="#lt-P230-gt" class="headerlink" title="&lt; P230 &gt;"></a>&lt; P230 &gt;</h3><ul>
-<li>加上助记符<code>&lt;-</code>变成<em>unidirectional channel</em>，如<code>&lt;-chan T</code>或<code>chan&lt;- T</code>，表示数据只能单方向传输，会在编译时检查是否有违法的操作；</li>
-<li>对<em>read-only</em>的<em>channel</em>使用<code>close</code>方法会引发编译错误；</li>
-<li>存在从双向<em>channel</em>到单向的隐式转换，但这种转换是不可逆的；</li>
+<h3 id="lt-P271-gt"><a href="#lt-P271-gt" class="headerlink" title="&lt; P271 &gt;"></a>&lt; P271 &gt;</h3><p>在<code>go build</code>和<code>go test</code>后加上选项<code>-race</code>可以检测运行中出现的<em>data race</em>；</p>
+<h3 id="lt-P280-gt"><a href="#lt-P280-gt" class="headerlink" title="&lt; P280 &gt;"></a>&lt; P280 &gt;</h3><ul>
+<li><em>goroutine</em>的栈可以增长，一般初始大小是2KB；</li>
+<li>Go使用<em>m:n scheduling</em>，m指<code>goroutine</code>数，n指系统线程数；</li>
+<li><em>goroutine</em>在<code>time.Sleep</code>或<code>channel</code>阻塞或互斥锁时会被<em>scheduler</em>置入休眠态，即不占用系统线程，但是如果是IO阻塞或者调用非Go函数则占用且其线程数不纳入<code>GOMAXPROCS</code>；</li>
+<li>环境变量<code>GOMAXPROCS</code>指m:n中的n，默认值是cpu数；</li>
+<li><em>goroutine</em>没有供编程人员使用的标识；</li>
 </ul>
-<h3 id="lt-P232-gt"><a href="#lt-P232-gt" class="headerlink" title="&lt; P232 &gt;"></a>&lt; P232 &gt;</h3><ul>
-<li>用<code>len</code>和<code>cap</code>方法查看<em>channel</em>的当前缓存元素个数和容量；</li>
-<li>不要把<em>channel</em>当作队列使用，因为<em>channel</em>和当前<em>goroutine</em>的时序联系很深，可能会阻塞运行；</li>
-<li><em>goroutine leak</em>发生在<em>goroutine</em>向一个<em>channel</em>发送数据时被阻塞，而该<em>channel</em>之后也不会被取出数据，所以阻塞一直持续；</li>
-</ul>
-<h3 id="lt-P236-gt"><a href="#lt-P236-gt" class="headerlink" title="&lt; P236 &gt;"></a>&lt; P236 &gt;</h3><p><strong>使用匿名函数的<em>goroutine</em>也要注意变量的捕获，应该用传参或者新的局部变量捕获</strong>；</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> ch = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;)</span><br><span class="line">    <span class="keyword">for</span> _, s := <span class="keyword">range</span> <span class="string">"abcdefg"</span> &#123;</span><br><span class="line">        <span class="comment">//s := s // 用新的局部变量</span></span><br><span class="line">        <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(s <span class="keyword">rune</span>)</span></span> &#123;</span><br><span class="line">            fmt.Printf(<span class="string">"%c\n"</span>, s)</span><br><span class="line">            ch &lt;- <span class="keyword">struct</span>&#123;&#125;&#123;&#125;</span><br><span class="line">        &#125;(s) <span class="comment">// 或者传参</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> <span class="keyword">range</span> <span class="string">"abcdefg"</span> &#123;</span><br><span class="line">        &lt;-ch</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="lt-P245-gt"><a href="#lt-P245-gt" class="headerlink" title="&lt; P245 &gt;"></a>&lt; P245 &gt;</h3><ul>
-<li>没有<code>case</code>的<code>select</code>结构会<em>wait forever</em>；</li>
-<li>当多个<code>case</code>都<em>ready</em>时，<code>select</code>随机选择一个运行；</li>
-<li>使用<code>time.Tick</code>函数会新建一个<em>goroutine</em>，只建议全局都用到的时候才使用，不然会造成<em>goroutine leak</em>；一般推荐使用<code>time.NewTicker</code>,使用返回对象的<code>Stop</code>方法终止计时<em>goroutine</em>；</li>
-<li><code>select</code>里的<code>case</code>只能存在<em>channel</em>的接收或发送操作；</li>
-<li>对值为<code>nil</code>的<em>channel</em>的接收或发送都永远阻塞；配合<code>select</code>可以作为选项开关；</li>
-<li><code>select</code>加入<code>default</code>可以用作对<em>channel</em>的查询（<em>polling channel</em>）；否则会停留直到其中一个<code>case</code>可行；</li>
-</ul>
-<h3 id="lt-P252-gt"><a href="#lt-P252-gt" class="headerlink" title="&lt; P252 &gt;"></a>&lt; P252 &gt;</h3><p>poll一个<em>closed channel</em>可以取得零值（以及<code>false</code>）。</p>
 </section>
     <!-- Tags START -->
     
@@ -186,20 +173,13 @@
   <div class="nav-container">
     <!-- reverse left and right to put prev and next in a more logic postition -->
     
-      <a class="nav-left" href="/2018/10/08/ssh-tunnel-port-forwarding/">
+      <a class="nav-left" href="/2018/10/16/chrome-extension/">
         <span class="nav-arrow">← </span>
-        
-          SSH端口转发
-        
-      </a>
-    
-    
-      <a class="nav-right" href="/2018/10/16/chrome-extension/">
         
           写一个Chrome扩展
         
-        <span class="nav-arrow"> →</span>
       </a>
+    
     
   </div>
 
@@ -221,7 +201,7 @@
   <div class="toc-main">
     <strong class="toc-title">Catalog</strong>
     
-      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#第八章-goroutine和通道"><span class="toc-nav-text">第八章 goroutine和通道</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P225-gt"><span class="toc-nav-text">&lt; P225 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P229-gt"><span class="toc-nav-text">&lt; P229 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P230-gt"><span class="toc-nav-text">&lt; P230 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P232-gt"><span class="toc-nav-text">&lt; P232 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P236-gt"><span class="toc-nav-text">&lt; P236 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P245-gt"><span class="toc-nav-text">&lt; P245 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P252-gt"><span class="toc-nav-text">&lt; P252 &gt;</span></a></li></ol></li></ol>
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#第九章-使用共享变量实现并发"><span class="toc-nav-text">第九章 使用共享变量实现并发</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P262-gt"><span class="toc-nav-text">&lt; P262 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P266-gt"><span class="toc-nav-text">&lt; P266 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P271-gt"><span class="toc-nav-text">&lt; P271 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P280-gt"><span class="toc-nav-text">&lt; P280 &gt;</span></a></li></ol></li></ol>
     
   </div>
 </aside>
@@ -231,7 +211,7 @@
 
 <script>
   (function () {
-    var url = 'https://joe-xu.github.io/2018/10/10/reading-the-go-programming-language-07/';
+    var url = 'https://joe-xu.github.io/2018/10/18/reading-the-go-programming-language-08/';
     var banner = ''
     if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
       $('#article-banner').css({
