@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://joe-xu.github.io/2018/10/21/openwrt-extroot/</loc>
+    
+    <lastmod>2018-10-21T03:37:06.702Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://joe-xu.github.io/2018/10/18/reading-the-go-programming-language-08/</loc>
     
     <lastmod>2018-10-18T13:37:26.412Z</lastmod>
