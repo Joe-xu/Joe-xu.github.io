@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="Joe-xu&#39;s blog">
+  <meta name="keyword" content="hexo-theme, vuejs">
+  
+    <link rel="shortcut icon" type="image/ico" href="/images/glados_icon.png"/> 
+  
+  <title>
+    
+      OpenWRT上使用PostgreSQL | Thinking_Out_Loud
+    
+  </title>
+  <link href="//cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdn.staticfile.org/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdn.staticfile.org/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdn.staticfile.org/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdn.staticfile.org/nprogress/0.2.0/nprogress.min.js"></script>
+  <!-- <script src="/js/qrious.js"></script>
+<script src="/js/gitment.js"></script> -->
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.staticfile.org/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+</head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png" />
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>Thinking_Out_Loud</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">Home</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">Tags</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">Archives</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">About</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">Home</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">Tags</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">Archives</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">About</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2>OpenWRT上使用PostgreSQL</h2>
+  <p class="post-date">2018-10-21</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><p>遇到了两个大坑，气得要在小本子上狠狠记一笔。</p>
+<h1 id="安装PostgreSQL"><a href="#安装PostgreSQL" class="headerlink" title="安装PostgreSQL"></a>安装PostgreSQL</h1><p>安装很方便，一切看起来那么美好：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; opkg install pgsql-server pgsql-cli</span><br></pre></td></tr></table></figure>
+<p>查看安装信息可以发现安装时自动帮我们创建了一个<code>postgres</code>用户，这是一个伏笔。</p>
+<p>我安装的版本：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@Joe-OpenWrt:~<span class="comment"># psql --version</span></span><br><span class="line">psql (PostgreSQL) 9.6.10</span><br></pre></td></tr></table></figure>
+<h1 id="配置PostgreSQL"><a href="#配置PostgreSQL" class="headerlink" title="配置PostgreSQL"></a>配置PostgreSQL</h1><p>我们不能以<code>root</code>角色进行配置，可以创建一个<code>postgres</code>用户进行操作。又因为OpenWRT的设计初衷是一个单用户系统，我们需要安装<code>shadow</code>全家桶来polyfill用户组相关功能。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; opkg install shadow</span><br></pre></td></tr></table></figure>
+<p>注意了，<strong>我们需要先删除安装时自动创建的<code>postgres</code>用户</strong>，再重新创建，这是一个坑，否则无法用<code>su</code>切换用户（<strong>最过分的是无错误提示</strong>）。</p>
+<h2 id="配置data目录"><a href="#配置data目录" class="headerlink" title="配置data目录"></a>配置data目录</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; chmod -R postgres:postgres /path/to/data</span><br><span class="line">&gt; su postgres</span><br><span class="line">&gt; <span class="variable">$LC_COLLATE</span>=<span class="string">"C"</span> initdb --pwprompt -D /path/to/data</span><br></pre></td></tr></table></figure>
+<h2 id="配置服务"><a href="#配置服务" class="headerlink" title="配置服务"></a>配置服务</h2><p>更改UCI中的配置：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; uci <span class="built_in">set</span> postgresql.config.PGDATA=/path/to/data</span><br><span class="line">&gt; uci <span class="built_in">set</span> postgresql.config.PGLOG=/path/to/data/postgresql.log</span><br><span class="line">&gt; uci commit</span><br></pre></td></tr></table></figure>
+<p>设置开机自启：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; /etc/init.d/postgresql <span class="built_in">enable</span></span><br></pre></td></tr></table></figure>
+<p>但是我发现使用</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; /etc/init.d/postgresql start</span><br></pre></td></tr></table></figure>
+<p>是无法启用服务的，这就是第二个坑。</p>
+<p>我们查看<code>/etc/init.d/postgresql</code>文件中的<code>start_service</code>函数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">procd_open_instance</span><br><span class="line">procd_set_param user postgres</span><br><span class="line">procd_set_param command $PROG</span><br><span class="line">procd_append_param command -D &quot;$&#123;pgdata&#125;&quot;</span><br><span class="line">[ -n &quot;$&#123;pgopts&#125;&quot; ] &amp;&amp; procd_append_param command -o &quot;$&#123;pgopts&#125;&quot;</span><br><span class="line">procd_set_param respawn retry=60</span><br><span class="line">procd_close_instance</span><br><span class="line"></span><br><span class="line">procd_open_instance</span><br><span class="line">procd_set_param user postgres</span><br><span class="line">procd_set_param command /lib/functions/postgresql.sh init &quot;$&#123;pgdata&#125;&quot;</span><br><span class="line">procd_close_instance</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>其中<code>$PROG</code>是<code>/usr/bin/postmaster</code>，可知先运行<code>postmaster</code>作为服务的一个实例再运行下面的脚本<code>postgresql.sh</code>。但结果是<code>postmaster</code>实例并没有运行的迹象，仅有<code>postgresql.sh</code>在轮询<em>psql daemon</em>的运行状态等待下一步操作，增加设置将输出重定向到syslog</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">procd_set_param stdout 1 # forward stdout of the command to logd</span><br><span class="line">procd_set_param stderr 1 # same for stderr</span><br></pre></td></tr></table></figure>
+<p>使用<code>logread</code>也没看到任何输出。</p>
+<p>用<code>ubus call service list</code>查看服务实例：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">"postgresql": &#123;</span><br><span class="line">        "instances": &#123;</span><br><span class="line">                "instance1": &#123;</span><br><span class="line">                        "running": false,</span><br><span class="line">                        "command": [</span><br><span class="line">                                "\/usr\/bin\/postmaster",</span><br><span class="line">                                "-D",</span><br><span class="line">                                <span class="string">"\/mnt\/u\/postgresql\/data\/"</span></span><br><span class="line">                        ],</span><br><span class="line">                        "term_timeout": 5,</span><br><span class="line">                        "respawn": &#123;</span><br><span class="line">                                "threshold": 0,</span><br><span class="line">                                "timeout": 5,</span><br><span class="line">                                "retry": 5</span><br><span class="line">                        &#125;</span><br><span class="line">                &#125;,</span><br><span class="line">                "instance2": &#123;</span><br><span class="line">                        "running": true,</span><br><span class="line">                        "pid": 21518,</span><br><span class="line">                        "command": [</span><br><span class="line">                                "\/lib\/functions\/postgresql.sh",</span><br><span class="line">                                "init",</span><br><span class="line">                                <span class="string">"\/mnt\/u\/postgresql\/data\/"</span></span><br><span class="line">                        ],</span><br><span class="line">                        "term_timeout": 5</span><br><span class="line">                &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以发现也是没有运行。</p>
+<p>最后的最后，我发现只有先运行<code>postgresql.sh</code>实例才能正常运行服务，原因不详（<strong>肯定是procd的feature</strong>）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">procd_open_instance</span><br><span class="line">procd_set_param user postgres</span><br><span class="line">procd_set_param command /lib/functions/postgresql.sh init &quot;$&#123;pgdata&#125;&quot;</span><br><span class="line">procd_close_instance</span><br><span class="line"></span><br><span class="line">procd_open_instance</span><br><span class="line">procd_set_param user postgres</span><br><span class="line">procd_set_param command $PROG</span><br><span class="line">procd_append_param command -D &quot;$&#123;pgdata&#125;&quot;</span><br><span class="line">[ -n &quot;$&#123;pgopts&#125;&quot; ] &amp;&amp; procd_append_param command -o &quot;$&#123;pgopts&#125;&quot;</span><br><span class="line">procd_set_param respawn retry=60</span><br><span class="line">procd_close_instance</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h2 id="允许远程连接"><a href="#允许远程连接" class="headerlink" title="允许远程连接"></a>允许远程连接</h2><ol>
+<li><p>修改<code>.../data/postgresql.conf</code>：</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">listen_addresses = &apos;*&apos;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修改<code>.../data/pg_hba.conf</code>：</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># Put your actual configuration here</span><br><span class="line"># ----------------------------------</span><br><span class="line">host    all     all     0.0.0.0/0       md5</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>重启服务：</p>
+ <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; /etc/init.d/postgresql restart</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>验证:</p>
+ <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ psql -h 192.168.100.1 -U postgres</span><br><span class="line">Password <span class="keyword">for</span> user postgres:</span><br><span class="line">psql (9.5.14, server 9.6.10)</span><br><span class="line">WARNING: psql major version 9.5, server major version 9.6.</span><br><span class="line">         Some psql features might not work.</span><br><span class="line">Type <span class="string">"help"</span> <span class="keyword">for</span> <span class="built_in">help</span>.</span><br><span class="line"></span><br><span class="line">postgres=<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><strong>I AM DONE</strong></p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a href="https://www.cnblogs.com/icez/p/3899147.html" target="_blank" rel="noopener">https://www.cnblogs.com/icez/p/3899147.html</a></li>
+<li><a href="https://openwrt.org/docs/guide-developer/procd-init-scripts" target="_blank" rel="noopener">https://openwrt.org/docs/guide-developer/procd-init-scripts</a></li>
+</ol>
+</section>
+    <!-- Tags START -->
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#openwrt" >
+    <span class="tag-code">openwrt</span>
+  </a>
+
+  <a href="/tags#PostgreSQL" >
+    <span class="tag-code">PostgreSQL</span>
+  </a>
+
+      </div>
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/2018/10/21/openwrt-extroot/">
+        <span class="nav-arrow">← </span>
+        
+          为OpenWRT配置extroot
+        
+      </a>
+    
+    
+  </div>
+
+    <!-- NAV END -->
+    <!-- 打赏 START -->
+    
+    <!-- 打赏 END -->
+    <!-- 二维码 START -->
+    
+    <!-- 二维码 END -->
+    
+      <!-- No Comment -->
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">Catalog</strong>
+    
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#安装PostgreSQL"><span class="toc-nav-text">安装PostgreSQL</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#配置PostgreSQL"><span class="toc-nav-text">配置PostgreSQL</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#配置data目录"><span class="toc-nav-text">配置data目录</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#配置服务"><span class="toc-nav-text">配置服务</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#允许远程连接"><span class="toc-nav-text">允许远程连接</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#参考资料"><span class="toc-nav-text">参考资料</span></a></li></ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'https://joe-xu.github.io/2018/10/21/postgresql-on-openwrt/';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+     // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
+      $(this).css({
+        'cursor': 'default'
+      })
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      if (src !== 'http://file.muyutech.com/error-img.png') {
+        var imageW = $(this).width()
+        var imageH = $(this).height()
+        
+        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+        zoom = zoom < 1 ? 1 : zoom
+        zoom = zoom > 2 ? 2 : zoom
+        var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+        $('.image-view-wrap').addClass('wrap-active')
+        $('.image-view-wrap img').css({
+          'width': `${imageW}`,
+          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+        })
+        $('html').css('overflow', 'hidden')
+
+        $('.image-view-wrap').on('click', function() {
+          $(this).remove()
+          $('html').attr('style', '')
+        })
+      }
+    })
+
+   
+
+  })();
+</script>
+
+
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    &copy; 2018 | Proudly powered by <a href="https://hexo.io" target="_blank">Hexo</a>
+    <br>
+    Theme by <a href="https://github.com/yanm1ng">yanm1ng</a>
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdn.staticfile.org/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdn.staticfile.org/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+  </body>
+</html>
