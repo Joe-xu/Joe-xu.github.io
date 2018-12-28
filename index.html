@@ -128,6 +128,30 @@
   
     <article class="article-card">
       <h2 class="article-head">
+        <a href="/2018/12/28/ftp-in-docker/">记一个坑：在Docker中使用FTP</a>
+      </h2>
+      <p class="article-date">December 28, 2018</p>
+      
+        
+  <a href="/tags#Docker" >
+    <span class="tag-code">Docker</span>
+  </a>
+
+      
+      <div class="article-summary">
+        
+          为了池化服务器资源，开始用k8s部署服务，但总有没办法避过的阵痛（尤其是在内网环境中），在这里记一个实际遇到的坑。
+FTP协议谷歌可知，FTP使用两个信道分别传输控制命令（如目录切换还有创建目录等）和数据，使用的知名端口就是20和21。
+服务端和客户端大概的交互流程如下：
+
+服务端监听默认端 ...
+        
+      </div>
+      <a class="more" href="/2018/12/28/ftp-in-docker/">Read more</a>
+    </article>
+  
+    <article class="article-card">
+      <h2 class="article-head">
         <a href="/2018/10/24/git-format-patch/">git中生成和使用patch</a>
       </h2>
       <p class="article-date">October 24, 2018</p>
@@ -366,28 +390,6 @@ A function is a piece of code that is called by name. It can  ...
         
       </div>
       <a class="more" href="/2018/10/01/reading-the-go-programming-language-05/">Read more</a>
-    </article>
-  
-    <article class="article-card">
-      <h2 class="article-head">
-        <a href="/2018/09/28/group-concat-in-mysql/">MySQL中的GROUP_CONCAT()</a>
-      </h2>
-      <p class="article-date">September 28, 2018</p>
-      
-        
-  <a href="/tags#MySQL" >
-    <span class="tag-code">MySQL</span>
-  </a>
-
-      
-      <div class="article-summary">
-        
-          背景今天要在负责维护的内部系统中做一次数据迁移（心跳加速），表结构不变，而是改变一些字段的存取方式。第一次用到了MySQL里的GROUP_CONCAT()函数，在这里记录一下。
-准备测试表&amp;数据下面是简单的测试用表：
-12345678CREATE TABLE `tab_test` ( ...
-        
-      </div>
-      <a class="more" href="/2018/09/28/group-concat-in-mysql/">Read more</a>
     </article>
   
 

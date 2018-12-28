@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://joe-xu.github.io/2018/12/28/ftp-in-docker/</loc>
+    
+    <lastmod>2018-12-28T14:43:57.707Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://joe-xu.github.io/2018/10/24/git-format-patch/</loc>
     
     <lastmod>2018-10-24T14:01:58.773Z</lastmod>
