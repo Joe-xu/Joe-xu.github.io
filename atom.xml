@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://joe-xu.github.io/"/>
-  <updated>2018-12-28T14:43:57.707Z</updated>
+  <updated>2019-03-14T14:42:31.085Z</updated>
   <id>https://joe-xu.github.io/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>K8s中的Level Based设计</title>
+    <link href="https://joe-xu.github.io/2019/03/14/level-based-system/"/>
+    <id>https://joe-xu.github.io/2019/03/14/level-based-system/</id>
+    <published>2019-03-14T14:03:21.000Z</published>
+    <updated>2019-03-14T14:42:31.085Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><p>K8s为了从故障中快速恢复用了一种Level-based的模式实现API和Controller，相对地，还有另一种概念Edge-based。这两种概念都来自硬件中断。例如，电路由低电平跳变到高电平触发事件的方式就称作边沿触发，是由电平变化触发的，而相对的电平触发则是电路到达额定电平才触发事件。</p><h1 id="K8s怎么做的"><a href="#K8s怎么做的" class="headerlink" title="K8s怎么做的"></a>K8s怎么做的</h1><p>具体来说，K8s将集群的所有内部状态都托管到外部高可用的存储服务，如Etcd，再加上集群状态更新时是将新状态先保存到Etcd，Controller异步地去更新集群的状态。所以K8s很自然地就做到了Level based，而不是实时响应每一个请求。在集群状态频繁更新的场景中，不会有过时的请求在排队，Controller在Reconcile过程中只根据Namespace和Name从Etcd中读取数据，可以保证读到的永远是实时的新鲜的数据。</p><h1 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h1><p>上面已经提到了，再总结一下：</p><ol><li>可以跳过临时的或过时的状态，直接处理当前最新的系统状态；</li><li>可以很自然地将频繁的或重复请求合并，避免每个请求都需要系统单独响应；</li></ol><h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol><li><a href="https://book.kubebuilder.io/basics/what_is_a_controller.html#" target="_blank" rel="noopener">https://book.kubebuilder.io/basics/what_is_a_controller.html#</a></li></ol>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;概念&quot;&gt;&lt;a href=&quot;#概念&quot; class=&quot;headerlink&quot; title=&quot;概念&quot;&gt;&lt;/a&gt;概念&lt;/h1&gt;&lt;p&gt;K8s为了从故障中快速恢复用了一种Level-based的模式实现API和Controller，相对地，还有另一种概念Edge-based。
+      
+    
+    </summary>
+    
+    
+      <category term="K8s" scheme="https://joe-xu.github.io/tags/K8s/"/>
+    
+  </entry>
   
   <entry>
     <title>记一个坑：在Docker中使用FTP</title>
@@ -479,31 +502,6 @@
       <category term="Linux" scheme="https://joe-xu.github.io/tags/Linux/"/>
     
       <category term="shell" scheme="https://joe-xu.github.io/tags/shell/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>《Go程序设计语言》读书笔记#1</title>
-    <link href="https://joe-xu.github.io/2018/09/05/reading-the-go-programming-language-01/"/>
-    <id>https://joe-xu.github.io/2018/09/05/reading-the-go-programming-language-01/</id>
-    <published>2018-09-05T13:04:40.000Z</published>
-    <updated>2018-09-24T13:57:41.628Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="第二章-程序结构"><a href="#第二章-程序结构" class="headerlink" title="第二章 程序结构"></a>第二章 程序结构</h2><h3 id="lt-P28-gt"><a href="#lt-P28-gt" class="headerlink" title="&lt; P28 &gt;"></a>&lt; P28 &gt;</h3><p>Go中的<a href="https://golang.org/ref/spec#Predeclared_identifiers" target="_blank" rel="noopener">Predeclared identifiers</a>如下：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Types:</span><br><span class="line">bool byte complex64 complex128 error float32 float64</span><br><span class="line">int int8 int16 int32 int64 rune string</span><br><span class="line">uint uint8 uint16 uint32 uint64 uintptr</span><br><span class="line"></span><br><span class="line">Constants:</span><br><span class="line">true false iota</span><br><span class="line"></span><br><span class="line">Zero value:</span><br><span class="line">nil</span><br><span class="line"></span><br><span class="line">Functions:</span><br><span class="line">append cap close complex copy delete imag len</span><br><span class="line">make new panic print println real recover</span><br></pre></td></tr></table></figure><p>这里面的关键字都是不保留的，可以用作我们的自定变量名，当然这是强烈不推荐的。<del>除非已经被<em>命名困难症</em>逼到了绝境。</del></p><p>另外，变量名长度是不作限定的（the larger the scope of a name, the longer and more meanningful it should be），一个全局变量的名字应该比一个局部变量更易见名知义（所以长点也没关系）。</p><h3 id="lt-P31-gt"><a href="#lt-P31-gt" class="headerlink" title="&lt; P31 &gt;"></a>&lt; P31 &gt;</h3><ul><li><code>:=</code>(the short variable declaration)是用作声明的，而不是像<code>=</code>一样用作赋值；</li><li><code>:=</code>左边至少要存在一个未声明的变量；</li></ul><h3 id="lt-P35-gt"><a href="#lt-P35-gt" class="headerlink" title="&lt; P35 &gt;"></a>&lt; P35 &gt;</h3><p>如果两个变量的类型不承载任何信息，根据编译器的实现，指针地址可能相同，例如<code>struct{}</code>和<code>[0]int</code>；</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> t1 <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line"><span class="keyword">var</span> t2 <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line">fmt.Printf(<span class="string">"%t\n"</span>, &amp;t1 == &amp;t2)   <span class="comment">//true  t1,t2为[0]int时同理</span></span><br></pre></td></tr></table></figure><h3 id="lt-P36-gt"><a href="#lt-P36-gt" class="headerlink" title="&lt; P36 &gt;"></a>&lt; P36 &gt;</h3><ul><li>用生命周期长的指针指向生命周期短的变量会阻碍对该变量的GC；</li><li><strong>变量被分配到堆或栈与否不由声明方式决定</strong>，如<code>var</code>或<code>new</code>；(mark一下，之后再拓展一篇，<del>如果还有机会看见这个mark</del>)</li></ul><h3 id="lt-P39-gt"><a href="#lt-P39-gt" class="headerlink" title="&lt; P39 &gt;"></a>&lt; P39 &gt;</h3><p>显式类型转换<code>T(x)</code>是一种<a href="https://golang.org/ref/spec#Conversions" target="_blank" rel="noopener">转换(conversion)</a>，不是函数调用；</p><h3 id="lt-P41-gt"><a href="#lt-P41-gt" class="headerlink" title="&lt; P41 &gt;"></a>&lt; P41 &gt;</h3><p>首先看代码：</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">float64</span></span><br><span class="line"><span class="keyword">var</span> x T</span><br><span class="line"></span><br><span class="line"><span class="comment">// 会隐式调用T的String方法（如果有）</span></span><br><span class="line">fmt.Printf(<span class="string">"%v"</span>,x)</span><br><span class="line">fmt.Printf(<span class="string">"%s"</span>,x)</span><br><span class="line">fmt.Println(x)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 不会调用</span></span><br><span class="line">fmt.Printf(<span class="string">"%g"</span>,x)</span><br><span class="line">fmt.Println(<span class="keyword">float64</span>(x))</span><br></pre></td></tr></table></figure><p>那么我们在给<code>T</code>实现<code>String()</code>且需要打印自身时，要注意避免无穷递归调用。</p><h3 id="lt-P46-gt"><a href="#lt-P46-gt" class="headerlink" title="&lt; P46 &gt;"></a>&lt; P46 &gt;</h3><ul><li>变量的作用域与生命周期不相等，作用域是编译时属性(compile-time property)，而生命周期是运行时属性(run-time porperty)；</li><li><p>有或没有显式地用花括号界定的作用域都可以笼统地归纳为<em>lexical block</em>；例如包含整个源码的<em>universe <a href="https://golang.org/ref/spec#Blocks" target="_blank" rel="noopener">block</a></em>，每个<code>package</code>、文件、<code>for</code>、<code>if</code>、<code>switch/select</code>，<code>switch/select</code>中的每个<code>case</code>；</p>  <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">x := <span class="string">"hello"</span></span><br><span class="line"><span class="keyword">for</span>  _ , x := <span class="keyword">range</span> x&#123;  <span class="comment">// for statement中有隐式lexical block</span></span><br><span class="line">x := x +<span class="string">'A'</span>-<span class="string">'a'</span>     <span class="comment">// &#123;&#125;中的显式lexical block</span></span><br><span class="line">fmt.Printf(<span class="string">"%c"</span>,x)  <span class="comment">// 正常输出"HELLO"</span></span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li><li><p>导入的包的作用域是<em>file-level</em>的，所以每个文件都要单独导入，即使是同一个包下；</p></li><li><em>Control-flow label</em>（用于<code>break</code>、<code>continue</code>和<code>goto</code>）的作用域是整个函数；</li><li>编译器会从最内的<em>lexical block</em>至<em>universe block</em>查找变量的声明；所以最内部变量可以<em>shadow</em>（又或称屏蔽/<em>hide</em>）外部同名变量；</li></ul><h3 id="lt-P49-gt"><a href="#lt-P49-gt" class="headerlink" title="&lt; P49 &gt;"></a>&lt; P49 &gt;</h3><p><strong>在使用<code>:=</code>时要注意作用域</strong>；例如，如果要在函数内更新<em>package-level</em>变量，使用<code>:=</code>会重新声明一个同名局部变量；</p><h2 id="一段闲扯"><a href="#一段闲扯" class="headerlink" title="一段闲扯"></a>一段闲扯</h2><blockquote><p>！！距离拖延症发作过去了<strong>03</strong>天！！</p></blockquote><p>从第二章开始的内容已经比第一章多了，不过想想，这也是肯定的。按照这个劲头，似乎半个月就能把这个系列整理完。另外hexo是真的好用，都要治好我多年的拖延症了。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h2 id=&quot;第二章-程序结构&quot;&gt;&lt;a href=&quot;#第二章-程序结构&quot; class=&quot;headerlink&quot; title=&quot;第二章 程序结构&quot;&gt;&lt;/a&gt;第二章 程序结构&lt;/h2&gt;&lt;h3 id=&quot;lt-P28-gt&quot;&gt;&lt;a href=&quot;#lt-P28-gt&quot; class=&quot;he
-      
-    
-    </summary>
-    
-    
-      <category term="Go" scheme="https://joe-xu.github.io/tags/Go/"/>
-    
-      <category term="读书笔记" scheme="https://joe-xu.github.io/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
     
   </entry>
   

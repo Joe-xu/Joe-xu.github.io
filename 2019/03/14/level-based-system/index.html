@@ -10,7 +10,7 @@
   
   <title>
     
-      《Go程序设计语言》读书笔记#8 | Thinking_Out_Loud
+      K8s中的Level Based设计 | Thinking_Out_Loud
     
   </title>
   <link href="//cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -125,8 +125,8 @@
 </header>
 
     <div id="article-banner">
-  <h2>《Go程序设计语言》读书笔记#8</h2>
-  <p class="post-date">2018-10-18</p>
+  <h2>K8s中的Level Based设计</h2>
+  <p class="post-date">2019-03-14</p>
   <div class="arrow-down">
     <a href="javascript:;"></a>
   </div>
@@ -134,35 +134,24 @@
 <main class="app-body flex-box">
   <!-- Article START -->
   <article class="post-article">
-    <section class="markdown-content"><h2 id="第九章-使用共享变量实现并发"><a href="#第九章-使用共享变量实现并发" class="headerlink" title="第九章 使用共享变量实现并发"></a>第九章 使用共享变量实现并发</h2><h3 id="lt-P262-gt"><a href="#lt-P262-gt" class="headerlink" title="&lt; P262 &gt;"></a>&lt; P262 &gt;</h3><ul>
-<li>可以用容量为1的<code>channel</code>实现互斥锁；</li>
-<li>通常互斥锁的声明紧贴在要守卫的变量前，如果偏离这个原则，应该在文档中说明；</li>
-<li>如果返回的变量需要互斥锁，可以使用<code>defer</code>解锁；</li>
-</ul>
-<h3 id="lt-P266-gt"><a href="#lt-P266-gt" class="headerlink" title="&lt; P266 &gt;"></a>&lt; P266 &gt;</h3><ul>
-<li><code>sync.RWMutex</code>只有在多数是读取的情况下才更有效，因为<code>RWMutex</code>的实现要求更多内部标记，当用作非争用锁时可能比常规的更慢；</li>
-<li><strong>只读的变量也应该互斥</strong>；第一是防止在其它操作的中间步骤读取，第二是防止多核情况下，处理器没有将cache提交到主内存；</li>
-</ul>
-<h3 id="lt-P271-gt"><a href="#lt-P271-gt" class="headerlink" title="&lt; P271 &gt;"></a>&lt; P271 &gt;</h3><p>在<code>go build</code>和<code>go test</code>后加上选项<code>-race</code>可以检测运行中出现的<em>data race</em>；</p>
-<h3 id="lt-P280-gt"><a href="#lt-P280-gt" class="headerlink" title="&lt; P280 &gt;"></a>&lt; P280 &gt;</h3><ul>
-<li><em>goroutine</em>的栈可以增长，一般初始大小是2KB；</li>
-<li>Go使用<em>m:n scheduling</em>，m指<code>goroutine</code>数，n指系统线程数；</li>
-<li><em>goroutine</em>在<code>time.Sleep</code>或<code>channel</code>阻塞或互斥锁时会被<em>scheduler</em>置入休眠态，即不占用系统线程，但是如果是IO阻塞或者调用非Go函数则占用且其线程数不纳入<code>GOMAXPROCS</code>；</li>
-<li>环境变量<code>GOMAXPROCS</code>指m:n中的n，默认值是cpu数；</li>
-<li><em>goroutine</em>没有供编程人员使用的标识；</li>
-</ul>
+    <section class="markdown-content"><h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><p>K8s为了从故障中快速恢复用了一种Level-based的模式实现API和Controller，相对地，还有另一种概念Edge-based。这两种概念都来自硬件中断。例如，电路由低电平跳变到高电平触发事件的方式就称作边沿触发，是由电平变化触发的，而相对的电平触发则是电路到达额定电平才触发事件。</p>
+<h1 id="K8s怎么做的"><a href="#K8s怎么做的" class="headerlink" title="K8s怎么做的"></a>K8s怎么做的</h1><p>具体来说，K8s将集群的所有内部状态都托管到外部高可用的存储服务，如Etcd，再加上集群状态更新时是将新状态先保存到Etcd，Controller异步地去更新集群的状态。所以K8s很自然地就做到了Level based，而不是实时响应每一个请求。在集群状态频繁更新的场景中，不会有过时的请求在排队，Controller在Reconcile过程中只根据Namespace和Name从Etcd中读取数据，可以保证读到的永远是实时的新鲜的数据。</p>
+<h1 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h1><p>上面已经提到了，再总结一下：</p>
+<ol>
+<li>可以跳过临时的或过时的状态，直接处理当前最新的系统状态；</li>
+<li>可以很自然地将频繁的或重复请求合并，避免每个请求都需要系统单独响应；</li>
+</ol>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a href="https://book.kubebuilder.io/basics/what_is_a_controller.html#" target="_blank" rel="noopener">https://book.kubebuilder.io/basics/what_is_a_controller.html#</a></li>
+</ol>
 </section>
     <!-- Tags START -->
     
       <div class="tags">
         <span>Tags:</span>
         
-  <a href="/tags#Go" >
-    <span class="tag-code">Go</span>
-  </a>
-
-  <a href="/tags#读书笔记" >
-    <span class="tag-code">读书笔记</span>
+  <a href="/tags#K8s" >
+    <span class="tag-code">K8s</span>
   </a>
 
       </div>
@@ -173,20 +162,13 @@
   <div class="nav-container">
     <!-- reverse left and right to put prev and next in a more logic postition -->
     
-      <a class="nav-left" href="/2018/10/16/chrome-extension/">
+      <a class="nav-left" href="/2018/12/28/ftp-in-docker/">
         <span class="nav-arrow">← </span>
         
-          写一个Chrome扩展
+          记一个坑：在Docker中使用FTP
         
       </a>
     
-    
-      <a class="nav-right" href="/2018/10/21/openwrt-extroot/">
-        
-          为OpenWRT配置extroot
-        
-        <span class="nav-arrow"> →</span>
-      </a>
     
   </div>
 
@@ -208,7 +190,7 @@
   <div class="toc-main">
     <strong class="toc-title">Catalog</strong>
     
-      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#第九章-使用共享变量实现并发"><span class="toc-nav-text">第九章 使用共享变量实现并发</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P262-gt"><span class="toc-nav-text">&lt; P262 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P266-gt"><span class="toc-nav-text">&lt; P266 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P271-gt"><span class="toc-nav-text">&lt; P271 &gt;</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#lt-P280-gt"><span class="toc-nav-text">&lt; P280 &gt;</span></a></li></ol></li></ol>
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#概念"><span class="toc-nav-text">概念</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#K8s怎么做的"><span class="toc-nav-text">K8s怎么做的</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#优点"><span class="toc-nav-text">优点</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link" href="#参考资料"><span class="toc-nav-text">参考资料</span></a></li></ol>
     
   </div>
 </aside>
@@ -218,7 +200,7 @@
 
 <script>
   (function () {
-    var url = 'https://joe-xu.github.io/2018/10/18/reading-the-go-programming-language-08/';
+    var url = 'https://joe-xu.github.io/2019/03/14/level-based-system/';
     var banner = ''
     if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
       $('#article-banner').css({
